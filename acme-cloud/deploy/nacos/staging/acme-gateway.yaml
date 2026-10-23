@@ -1,0 +1,10 @@
+# Nacos 命名空间：staging    Data ID：acme-gateway.yaml
+# 网关的动态配置：限流阈值、灰度规则。修改后网关自动刷新，无需重启。
+acme:
+  gateway:
+    gray:
+      enabled: false
+      tag: v2
+      # 白名单用户 + 按比例放量
+      uids: ["1", "1001"]
+      percentage: 5

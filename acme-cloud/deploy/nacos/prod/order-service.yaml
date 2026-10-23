@@ -1,0 +1,16 @@
+# Nacos 命名空间：prod    Data ID：order-service.yaml
+# 订单服务的业务开关与调优参数（@ConfigurationProperties + @RefreshScope 的配置均可放这里）。
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          userClient:
+            read-timeout: 2000
+
+# 以下为启动时绑定的参数，修改后需滚动重启服务生效
+acme:
+  mq:
+    outbox:
+      batch-size: 100
+      poll-interval: 1s

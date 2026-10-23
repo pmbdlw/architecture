@@ -1,0 +1,40 @@
+# 测试环境：功能测试/联调。规模最小，允许客户端指定灰度标签便于测试指定版本。
+# 由 Argo CD ApplicationSet 读取，与 deploy/helm/acme-service/values.yaml 合并。
+
+appName: acme-auth
+env: test
+
+image:
+  repository: registry.acme.com/acme/acme-auth
+  tag: "3f9c2ab"
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 2
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 768Mi
+  limits:
+    memory: 768Mi
+
+secretName: acme-auth-secrets  # JWK 密钥对、客户端密钥
+
+extraEnv:
+  TRACING_SAMPLING_PROBABILITY: "1.0"
+
+ingress:
+  enabled: true
+  # 自建：ingress-nginx；阿里云 ACK 改为 alb 并使用 alb.ingress.kubernetes.io/* 注解
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: acme-ca
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+  hosts:
+    - host: auth.test.acme.com
+      path: /
+  tls:
+    - secretName: acme-auth-tls
+      hosts:
+        - auth.test.acme.com

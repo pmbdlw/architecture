@@ -1,0 +1,253 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1080" width="1440" height="1080" role="img" aria-label="方案A 全自建生产环境运行架构"><title>方案A 全自建生产环境运行架构</title><defs><marker id="arr2563eb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker><marker id="arr7c3aed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker><marker id="arr16a34a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/></marker><marker id="arrea580c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker><marker id="arrd97706" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker></defs><rect width="1440" height="1080" fill="#ffffff"/>
+<text x="28" y="34" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="22" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="middle">方案 A：全自建（IDC / 私有云）— 生产环境运行架构</text>
+<text x="28" y="62" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">测试、预发布环境使用同一套拓扑的缩小版（见“环境规划”）；所有组件均为开源或自有软件</text>
+<rect x="870" y="27" width="14" height="14" rx="3" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+<text x="890" y="34.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">接入</text>
+<rect x="937.0" y="27" width="14" height="14" rx="3" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+<text x="957.0" y="34.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">Spring Cloud 基础设施</text>
+<rect x="1120.0" y="27" width="14" height="14" rx="3" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="1140.0" y="34.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">业务服务</text>
+<rect x="870" y="55" width="14" height="14" rx="3" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+<text x="890" y="62.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">数据</text>
+<rect x="937.0" y="55" width="14" height="14" rx="3" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+<text x="957.0" y="62.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">消息/缓存</text>
+<rect x="1036.0" y="55" width="14" height="14" rx="3" fill="#fdf2f8" stroke="#db2777" stroke-width="1.5"/>
+<text x="1056.0" y="62.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">可观测</text>
+<rect x="1115.5" y="55" width="14" height="14" rx="3" fill="#f8fafc" stroke="#475569" stroke-width="1.5"/>
+<text x="1135.5" y="62.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">研发运维</text>
+<rect x="430" y="112" width="580" height="82" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.6"/>
+<rect x="442" y="99" width="67.0" height="26" rx="13" fill="#0f766e" stroke="none" stroke-width="1.5"/>
+<text x="475.5" y="112" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="middle">用户端</text>
+<rect x="450" y="128" width="170" height="54" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+<rect x="450" y="128" width="5" height="54" rx="2" fill="#0f766e" stroke="none" stroke-width="1.5"/>
+<g fill="#0f766e"><circle cx="472" cy="151.0" r="3.5"/><path d="M464.5,163.0 a7.5,7.0 0 0 1 15.0,0 z"/></g>
+<text x="555.0" y="144.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#134e4a" text-anchor="middle" dominant-baseline="middle">Web / H5</text>
+<text x="555.0" y="166.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">浏览器</text>
+<rect x="636" y="128" width="170" height="54" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+<rect x="636" y="128" width="5" height="54" rx="2" fill="#0f766e" stroke="none" stroke-width="1.5"/>
+<g fill="#0f766e"><circle cx="658" cy="151.0" r="3.5"/><path d="M650.5,163.0 a7.5,7.0 0 0 1 15.0,0 z"/></g>
+<text x="741.0" y="144.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#134e4a" text-anchor="middle" dominant-baseline="middle">App / 小程序</text>
+<text x="741.0" y="166.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">移动端</text>
+<rect x="822" y="128" width="170" height="54" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="1.5"/>
+<rect x="822" y="128" width="5" height="54" rx="2" fill="#0f766e" stroke="none" stroke-width="1.5"/>
+<g fill="#0f766e"><circle cx="844" cy="151.0" r="3.5"/><path d="M836.5,163.0 a7.5,7.0 0 0 1 15.0,0 z"/></g>
+<text x="927.0" y="144.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#134e4a" text-anchor="middle" dominant-baseline="middle">合作方</text>
+<text x="927.0" y="166.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">开放 API</text>
+<path d="M720,194 L720,232" fill="none" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr2563eb)" stroke-linejoin="round"/>
+<rect x="20" y="242" width="1400" height="86" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="32" y="229" width="249.40000000000006" height="26" rx="13" fill="#2563eb" stroke="none" stroke-width="1.5"/>
+<text x="156.70000000000005" y="242" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="middle">接入层（IDC 出口 · 双线 BGP）</text>
+<rect x="40" y="258" width="220" height="56" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<rect x="40" y="258" width="5" height="56" rx="2" fill="#2563eb" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#2563eb" stroke-width="1.6"><circle cx="62" cy="286.0" r="8.5"/><ellipse cx="62" cy="286.0" rx="3.8" ry="8.5"/><line x1="53.5" y1="286.0" x2="70.5" y2="286.0"/></g>
+<text x="170.0" y="275.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#1e3a8a" text-anchor="middle" dominant-baseline="middle">智能 DNS / GSLB</text>
+<text x="170.0" y="297.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">就近解析 · 故障切换</text>
+<rect x="275" y="258" width="180" height="56" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<rect x="275" y="258" width="5" height="56" rx="2" fill="#2563eb" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#2563eb" stroke-width="1.6"><circle cx="297" cy="286.0" r="8.5"/><ellipse cx="297" cy="286.0" rx="3.8" ry="8.5"/><line x1="288.5" y1="286.0" x2="305.5" y2="286.0"/></g>
+<text x="385.0" y="275.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#1e3a8a" text-anchor="middle" dominant-baseline="middle">CDN</text>
+<text x="385.0" y="297.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">静态资源 · 图片</text>
+<rect x="470" y="258" width="260" height="56" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<rect x="470" y="258" width="5" height="56" rx="2" fill="#2563eb" stroke="none" stroke-width="1.5"/>
+<path d="M492,277.0 l7.5,3.0 v4.5 c0,5.0 -3.5,8.0 -7.5,10.5 c-4.0,-2.5 -7.5,-5.5 -7.5,-10.5 v-4.5 z" fill="#2563eb" opacity="0.85"/>
+<text x="620.0" y="275.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#1e3a8a" text-anchor="middle" dominant-baseline="middle">防火墙 + WAF / 抗 D</text>
+<text x="620.0" y="297.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">ModSecurity 或商用设备</text>
+<rect x="745" y="258" width="270" height="56" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<rect x="745" y="258" width="5" height="56" rx="2" fill="#2563eb" stroke="none" stroke-width="1.5"/>
+<circle cx="767" cy="286.0" r="8.5" fill="none" stroke="#2563eb" stroke-width="1.8"/>
+<path d="M762.0,286.0 h10.0 M769.0,283.0 l3.0,3.0 l-3.0,3.0" stroke="#2563eb" stroke-width="1.8" fill="none"/>
+<text x="900.0" y="275.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#1e3a8a" text-anchor="middle" dominant-baseline="middle">L4 负载均衡（VIP）</text>
+<text x="900.0" y="297.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">F5 或 LVS + Keepalived</text>
+<rect x="1030" y="258" width="300" height="56" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<rect x="1030" y="258" width="5" height="56" rx="2" fill="#2563eb" stroke="none" stroke-width="1.5"/>
+<g><rect x="1045.5" y="285.0" width="13.0" height="9.5" rx="2" fill="#2563eb"/><path d="M1048.0,285.0 v-3.0 a4.0,4.0 0 0 1 8.0,0 v3.0" fill="none" stroke="#2563eb" stroke-width="1.8"/></g>
+<text x="1200.0" y="275.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#1e3a8a" text-anchor="middle" dominant-baseline="middle">专线 / VPN</text>
+<text x="1200.0" y="297.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">办公网 · 合作方 · 灾备机房</text>
+<path d="M880,314 L880,386" fill="none" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr2563eb)" stroke-linejoin="round"/>
+<rect x="875.5" y="335" width="59.00000000000001" height="20" rx="4" fill="#ffffff" stroke="none" stroke-width="1.5" opacity="0.92"/>
+<text x="905" y="346" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="500" fill="#2563eb" text-anchor="middle" dominant-baseline="middle">TCP 443</text>
+<rect x="20" y="362" width="990" height="562" rx="12" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="32" y="349" width="174.40000000000003" height="26" rx="13" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="119.20000000000002" y="362" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="middle">Kubernetes 生产集群</text>
+<rect x="214.40000000000003" y="351" width="385.50000000000006" height="22" rx="11" fill="#ffffff" stroke="#0284c7" stroke-width="1"/>
+<text x="407.1500000000001" y="362.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">RKE2 / kubeadm · 3 Master + N Worker · 跨机柜/机房打散</text>
+<rect x="40" y="390" width="950" height="46" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<rect x="40" y="390" width="5" height="46" rx="2" fill="#2563eb" stroke="none" stroke-width="1.5"/>
+<text x="517.0" y="411.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="600" fill="#1e3a8a" text-anchor="middle" dominant-baseline="middle">ingress-nginx（边缘节点 DaemonSet · TLS 终止 · api.acme.com → 网关，auth.acme.com → 认证中心）</text>
+<path d="M280,436 L280,482" fill="none" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr2563eb)" stroke-linejoin="round"/>
+<path d="M760,436 L760,482" fill="none" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr2563eb)" stroke-linejoin="round"/>
+<rect x="40" y="460" width="950" height="250" rx="12" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="52" y="447" width="184.00000000000003" height="26" rx="13" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="144.0" y="460" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="middle">命名空间 acme（业务）</text>
+<rect x="244.00000000000003" y="449" width="249.5" height="22" rx="11" fill="#ffffff" stroke="#16a34a" stroke-width="1"/>
+<text x="368.75" y="460.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#14532d" text-anchor="middle" dominant-baseline="middle">Pod IP 注册到 Nacos，服务间直连 Pod</text>
+<rect x="60" y="484" width="440" height="66" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+<rect x="60" y="484" width="5" height="66" rx="2" fill="#7c3aed" stroke="none" stroke-width="1.5"/>
+<circle cx="82" cy="517.0" r="8.5" fill="none" stroke="#7c3aed" stroke-width="1.8"/>
+<path d="M77.0,517.0 h10.0 M84.0,514.0 l3.0,3.0 l-3.0,3.0" stroke="#7c3aed" stroke-width="1.8" fill="none"/>
+<text x="300.0" y="506.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#4c1d95" text-anchor="middle" dominant-baseline="middle">acme-gateway ×3</text>
+<text x="300.0" y="528.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Spring Cloud Gateway · JWT 校验 · Redis 限流 · 熔断 · 灰度打标</text>
+<rect x="530" y="484" width="440" height="66" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+<rect x="530" y="484" width="5" height="66" rx="2" fill="#7c3aed" stroke="none" stroke-width="1.5"/>
+<g><rect x="545.5" y="516.0" width="13.0" height="9.5" rx="2" fill="#7c3aed"/><path d="M548.0,516.0 v-3.0 a4.0,4.0 0 0 1 8.0,0 v3.0" fill="none" stroke="#7c3aed" stroke-width="1.8"/></g>
+<text x="770.0" y="506.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#4c1d95" text-anchor="middle" dominant-baseline="middle">acme-auth ×2</text>
+<text x="770.0" y="528.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Spring Authorization Server · OAuth2.1 / OIDC · 签发 JWT</text>
+<rect x="60.0" y="580" width="218.5" height="62" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="60.0" y="580" width="5" height="62" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="171.25" y="600.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">user-service ×3</text>
+<text x="171.25" y="622.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">MVC · MyBatis-Plus</text>
+<rect x="290.5" y="580" width="218.5" height="62" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="290.5" y="580" width="5" height="62" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="401.75" y="600.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">order-service ×3</text>
+<text x="401.75" y="622.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Feign · Stream(Outbox)</text>
+<rect x="521.0" y="580" width="218.5" height="62" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="521.0" y="580" width="5" height="62" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="632.25" y="600.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">notification-service ×2</text>
+<text x="632.25" y="622.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Stream 消费 · 幂等</text>
+<rect x="751.5" y="580" width="218.5" height="62" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="751.5" y="580" width="5" height="62" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="862.75" y="600.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">…其它领域服务</text>
+<text x="862.75" y="622.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">同一套 starter</text>
+<path d="M280,550 L280,580" fill="none" stroke="#7c3aed" stroke-width="1.8" marker-end="url(#arr7c3aed)" stroke-linejoin="round"/>
+<rect x="308.25" y="555" width="153.5" height="20" rx="4" fill="#ffffff" stroke="none" stroke-width="1.5" opacity="0.92"/>
+<text x="385" y="566" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="500" fill="#7c3aed" text-anchor="middle" dominant-baseline="middle">lb://服务名（灰度 LB）</text>
+<path d="M399.75,642 L399.75,660 L169.25,660 L169.25,644" fill="none" stroke="#16a34a" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arr16a34a)" stroke-linejoin="round"/>
+<text x="284.5" y="673" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#14532d" text-anchor="middle" dominant-baseline="middle">OpenFeign（内部 /internal/**）</text>
+<text x="60" y="696" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">每个服务：Deployment + HPA + PDB + NetworkPolicy · 跨节点打散 · 镜像按 digest 部署 · 探针走 8081 管理端口</text>
+<rect x="40" y="738" width="460" height="168" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="52" y="725" width="333.58000000000004" height="26" rx="13" fill="#ea580c" stroke="none" stroke-width="1.5"/>
+<text x="218.79000000000002" y="738" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="middle">命名空间 middleware（专用节点池 · 本地 SSD）</text>
+<rect x="56" y="762" width="428" height="62" rx="8" fill="#ffffff" stroke="#ea580c" stroke-width="1.5"/>
+<rect x="56" y="762" width="5" height="62" rx="2" fill="#ea580c" stroke="none" stroke-width="1.5"/>
+<rect x="69.5" y="788.5" width="4.5" height="9.0" rx="2" fill="#ea580c" opacity="0.45"/>
+<rect x="75.5" y="788.5" width="4.5" height="9.0" rx="2" fill="#ea580c" opacity="0.7"/>
+<rect x="81.5" y="788.5" width="4.5" height="9.0" rx="2" fill="#ea580c" opacity="0.95"/>
+<text x="290.0" y="782.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#7c2d12" text-anchor="middle" dominant-baseline="middle">Kafka 3 Broker（Strimzi · KRaft）</text>
+<text x="290.0" y="804.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">或 RabbitMQ 3 节点（Cluster Operator · 仲裁队列）</text>
+<rect x="56" y="834" width="428" height="58" rx="8" fill="#ffffff" stroke="#ea580c" stroke-width="1.5"/>
+<rect x="56" y="834" width="5" height="58" rx="2" fill="#ea580c" stroke="none" stroke-width="1.5"/>
+<path d="M79.5,854.0 l-6.5,10.0 h5.0 l-2.0,8.0 l7.0,-10.5 h-5.0 z" fill="#ea580c"/>
+<text x="290.0" y="852.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#7c2d12" text-anchor="middle" dominant-baseline="middle">Redis Sentinel（1 主 2 从 + 3 哨兵）</text>
+<text x="290.0" y="874.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">网关限流 · 缓存 · 分布式锁</text>
+<rect x="520" y="738" width="470" height="168" rx="12" fill="#fdf2f8" stroke="#db2777" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="532" y="725" width="181.84000000000003" height="26" rx="13" fill="#db2777" stroke="none" stroke-width="1.5"/>
+<text x="622.9200000000001" y="738" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="middle">命名空间 observability</text>
+<rect x="536" y="762" width="142" height="62" rx="8" fill="#ffffff" stroke="#db2777" stroke-width="1.5"/>
+<rect x="536" y="762" width="5" height="62" rx="2" fill="#db2777" stroke="none" stroke-width="1.5"/>
+<text x="609.0" y="782.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#831843" text-anchor="middle" dominant-baseline="middle">Prometheus</text>
+<text x="609.0" y="803.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">指标 · Alertmanager</text>
+<rect x="686" y="762" width="142" height="62" rx="8" fill="#ffffff" stroke="#db2777" stroke-width="1.5"/>
+<rect x="686" y="762" width="5" height="62" rx="2" fill="#db2777" stroke="none" stroke-width="1.5"/>
+<text x="759.0" y="782.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#831843" text-anchor="middle" dominant-baseline="middle">Grafana</text>
+<text x="759.0" y="803.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">大盘</text>
+<rect x="836" y="762" width="142" height="62" rx="8" fill="#ffffff" stroke="#db2777" stroke-width="1.5"/>
+<rect x="836" y="762" width="5" height="62" rx="2" fill="#db2777" stroke="none" stroke-width="1.5"/>
+<text x="909.0" y="782.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#831843" text-anchor="middle" dominant-baseline="middle">OTel Collector</text>
+<text x="909.0" y="803.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">链路接收/转发</text>
+<rect x="536" y="834" width="142" height="62" rx="8" fill="#ffffff" stroke="#db2777" stroke-width="1.5"/>
+<rect x="536" y="834" width="5" height="62" rx="2" fill="#db2777" stroke="none" stroke-width="1.5"/>
+<text x="609.0" y="854.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#831843" text-anchor="middle" dominant-baseline="middle">Tempo / SkyWalking</text>
+<text x="609.0" y="875.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">链路存储</text>
+<rect x="686" y="834" width="142" height="62" rx="8" fill="#ffffff" stroke="#db2777" stroke-width="1.5"/>
+<rect x="686" y="834" width="5" height="62" rx="2" fill="#db2777" stroke="none" stroke-width="1.5"/>
+<text x="759.0" y="854.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#831843" text-anchor="middle" dominant-baseline="middle">Loki（或 ELK）</text>
+<text x="759.0" y="875.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">日志</text>
+<rect x="836" y="834" width="142" height="62" rx="8" fill="#ffffff" stroke="#db2777" stroke-width="1.5"/>
+<rect x="836" y="834" width="5" height="62" rx="2" fill="#db2777" stroke="none" stroke-width="1.5"/>
+<text x="909.0" y="854.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#831843" text-anchor="middle" dominant-baseline="middle">Fluent Bit</text>
+<text x="909.0" y="875.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">日志采集</text>
+<path d="M455,710 L455,762" fill="none" stroke="#ea580c" stroke-width="1.8" marker-end="url(#arrea580c)" stroke-linejoin="round"/>
+<rect x="397.0" y="714" width="116.0" height="20" rx="4" fill="#ffffff" stroke="none" stroke-width="1.5" opacity="0.92"/>
+<text x="455" y="725" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="500" fill="#ea580c" text-anchor="middle" dominant-baseline="middle">Stream 发布/订阅</text>
+<rect x="1030" y="362" width="390" height="562" rx="12" fill="#fffbeb" stroke="#d97706" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="1042" y="349" width="272.88" height="26" rx="13" fill="#d97706" stroke="none" stroke-width="1.5"/>
+<text x="1178.44" y="362" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="middle">K8s 外：有状态核心（物理机 / 虚机）</text>
+<rect x="1048" y="392" width="354" height="82" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+<rect x="1048" y="392" width="5" height="82" rx="2" fill="#d97706" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#d97706" stroke-width="1.8"><ellipse cx="1070" cy="427.0" rx="8.0" ry="3.0"/><path d="M1062.0,427.0 v12.0 a8.0,3.0 0 0 0 16.0,0 v-12.0"/><path d="M1062.0,433.0 a8.0,3.0 0 0 0 16.0,0"/></g>
+<text x="1245.0" y="413.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#78350f" text-anchor="middle" dominant-baseline="middle">MySQL 8.4 InnoDB Cluster</text>
+<text x="1245.0" y="435.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">MGR 单主 3 节点 + MySQL Router</text>
+<text x="1245.0" y="453.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">一服务一库 · 半同步 · 读写分离可选</text>
+<text x="1225" y="488" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#78350f" text-anchor="middle" dominant-baseline="middle">— 或 —</text>
+<rect x="1048" y="502" width="354" height="70" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+<rect x="1048" y="502" width="5" height="70" rx="2" fill="#d97706" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#d97706" stroke-width="1.8"><ellipse cx="1070" cy="531.0" rx="8.0" ry="3.0"/><path d="M1062.0,531.0 v12.0 a8.0,3.0 0 0 0 16.0,0 v-12.0"/><path d="M1062.0,537.0 a8.0,3.0 0 0 0 16.0,0"/></g>
+<text x="1245.0" y="526.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#78350f" text-anchor="middle" dominant-baseline="middle">PostgreSQL 17 + Patroni</text>
+<text x="1245.0" y="548.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">1 主 2 从 · etcd 选主 · PgBouncer 连接池</text>
+<rect x="1048" y="592" width="354" height="82" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+<rect x="1048" y="592" width="5" height="82" rx="2" fill="#7c3aed" stroke="none" stroke-width="1.5"/>
+<circle cx="1070" cy="633.0" r="8.5" fill="none" stroke="#7c3aed" stroke-width="1.8"/><path d="M1070,627.0 l2.2,6.0 l-2.2,6.0 l-2.2,-6.0 z" fill="#7c3aed"/>
+<text x="1245.0" y="613.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#4c1d95" text-anchor="middle" dominant-baseline="middle">Nacos 3.x 集群 ×3</text>
+<text x="1245.0" y="635.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">注册中心 + 配置中心</text>
+<text x="1245.0" y="653.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">命名空间 = 环境 · 外置 MySQL 存储</text>
+<rect x="1048" y="694" width="354" height="62" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+<rect x="1048" y="694" width="5" height="62" rx="2" fill="#d97706" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#d97706" stroke-width="1.7"><path d="M1070,716.5 l8.0,4.0 v9.0 l-8.0,4.0 l-8.0,-4.0 v-9.0 z"/><path d="M1062.0,720.5 l8.0,4.0 l8.0,-4.0 M1070,724.5 v13.0"/></g>
+<text x="1245.0" y="714.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#78350f" text-anchor="middle" dominant-baseline="middle">MinIO · Elasticsearch</text>
+<text x="1245.0" y="736.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">对象存储 · 全文检索</text>
+<rect x="1048" y="776" width="354" height="70" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="1048" y="776" width="5" height="70" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#475569" stroke-width="1.7"><path d="M1064.0,802.5 h8.5 l3.5,3.5 v13.5 h-12.0 z"/><path d="M1066.5,809.5 h7.0 M1066.5,813.5 h7.0"/></g>
+<text x="1245.0" y="791.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">备份与容灾</text>
+<text x="1245.0" y="813.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">XtraBackup / pgBackRest → 异地机房</text>
+<text x="1245.0" y="831.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Velero 备份集群资源 · 定期恢复演练</text>
+<text x="1048" y="870" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#78350f" text-anchor="start" dominant-baseline="middle">原则：数据库不进 K8s；中间件由 Operator 管理</text>
+<text x="1048" y="892" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#78350f" text-anchor="start" dominant-baseline="middle">或放虚机，生产与非生产物理隔离</text>
+<path d="M990,625 L1020,625 L1020,432 L1046,432" fill="none" stroke="#d97706" stroke-width="1.8" marker-end="url(#arrd97706)" stroke-linejoin="round"/>
+<rect x="1001.0" y="518" width="38.0" height="20" rx="4" fill="#ffffff" stroke="none" stroke-width="1.5" opacity="0.92"/>
+<text x="1020" y="529" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="500" fill="#d97706" text-anchor="middle" dominant-baseline="middle">JDBC</text>
+<path d="M990,690 L1030,690 L1030,632 L1046,632" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#arr7c3aed)" stroke-linejoin="round"/>
+<rect x="976.5" y="702" width="67.0" height="20" rx="4" fill="#ffffff" stroke="none" stroke-width="1.5" opacity="0.92"/>
+<text x="1010" y="713" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="500" fill="#7c3aed" text-anchor="middle" dominant-baseline="middle">注册/配置</text>
+<rect x="20" y="958" width="1400" height="106" rx="12" fill="#f8fafc" stroke="#475569" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="32" y="945" width="407.20000000000005" height="26" rx="13" fill="#475569" stroke="none" stroke-width="1.5"/>
+<text x="235.60000000000002" y="958" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="15" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="middle">研发与运维支撑（独立管理集群 / 虚机，所有环境共用）</text>
+<rect x="40.0" y="980" width="161.25" height="64" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="40.0" y="980" width="5" height="64" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#475569" stroke-width="1.8"><circle cx="58.0" cy="1017.0" r="2.2"/><circle cx="58.0" cy="1006.5" r="2.2"/><circle cx="66.5" cy="1011.0" r="2.2"/><path d="M58.0,1008.7 v6.2 M58.0,1014.0 q0,-3.0 6.5,-3.0"/></g>
+<text x="140.625" y="1001.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">GitLab + Runner</text>
+<text x="140.625" y="1022.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">代码 · CI</text>
+<rect x="211.25" y="980" width="161.25" height="64" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="211.25" y="980" width="5" height="64" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#475569" stroke-width="1.7"><path d="M233.25,1003.5 l8.0,4.0 v9.0 l-8.0,4.0 l-8.0,-4.0 v-9.0 z"/><path d="M225.25,1007.5 l8.0,4.0 l8.0,-4.0 M233.25,1011.5 v13.0"/></g>
+<text x="311.875" y="1001.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Harbor</text>
+<text x="311.875" y="1022.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">镜像 · Trivy 扫描</text>
+<rect x="382.5" y="980" width="161.25" height="64" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="382.5" y="980" width="5" height="64" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#475569" stroke-width="1.7"><path d="M404.5,1003.5 l8.0,4.0 v9.0 l-8.0,4.0 l-8.0,-4.0 v-9.0 z"/><path d="M396.5,1007.5 l8.0,4.0 l8.0,-4.0 M404.5,1011.5 v13.0"/></g>
+<text x="483.125" y="1001.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Nexus</text>
+<text x="483.125" y="1022.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Maven 私服</text>
+<rect x="553.75" y="980" width="161.25" height="64" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="553.75" y="980" width="5" height="64" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g fill="#475569"><rect x="567.75" y="1012.0" width="3.5" height="8.0"/><rect x="573.75" y="1007.5" width="3.5" height="12.5"/><rect x="579.75" y="1004.0" width="3.5" height="16.0"/></g>
+<text x="654.375" y="1001.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">SonarQube</text>
+<text x="654.375" y="1022.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">质量门禁</text>
+<rect x="725.0" y="980" width="161.25" height="64" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="725.0" y="980" width="5" height="64" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<polygon points="747.0,1002.5 754.4,1006.1 756.3,1014.1 751.1,1020.6 742.9,1020.6 737.7,1014.1 739.6,1006.1" fill="#475569"/>
+<circle cx="747.0" cy="1012.0" r="3.8" fill="none" stroke="#fff" stroke-width="1.6"/>
+<line x1="747.0" y1="1012.0" x2="747.0" y2="1005.8" stroke="#fff" stroke-width="1.3"/>
+<line x1="747.0" y1="1012.0" x2="751.8" y2="1008.1" stroke="#fff" stroke-width="1.3"/>
+<line x1="747.0" y1="1012.0" x2="753.0" y2="1013.4" stroke="#fff" stroke-width="1.3"/>
+<line x1="747.0" y1="1012.0" x2="749.7" y2="1017.6" stroke="#fff" stroke-width="1.3"/>
+<line x1="747.0" y1="1012.0" x2="744.3" y2="1017.6" stroke="#fff" stroke-width="1.3"/>
+<line x1="747.0" y1="1012.0" x2="741.0" y2="1013.4" stroke="#fff" stroke-width="1.3"/>
+<line x1="747.0" y1="1012.0" x2="742.2" y2="1008.1" stroke="#fff" stroke-width="1.3"/>
+<text x="825.625" y="1001.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Argo CD</text>
+<text x="825.625" y="1022.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">GitOps 部署</text>
+<rect x="896.25" y="980" width="161.25" height="64" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="896.25" y="980" width="5" height="64" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g><rect x="911.75" y="1011.0" width="13.0" height="9.5" rx="2" fill="#475569"/><path d="M914.25,1011.0 v-3.0 a4.0,4.0 0 0 1 8.0,0 v3.0" fill="none" stroke="#475569" stroke-width="1.8"/></g>
+<text x="996.875" y="1001.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Vault</text>
+<text x="996.875" y="1022.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">密钥 · 动态凭证</text>
+<rect x="1067.5" y="980" width="161.25" height="64" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="1067.5" y="980" width="5" height="64" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g fill="#475569"><circle cx="1089.5" cy="1008.0" r="3.5"/><path d="M1082.0,1020.0 a7.5,7.0 0 0 1 15.0,0 z"/></g>
+<text x="1168.125" y="1001.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Keycloak / LDAP</text>
+<text x="1168.125" y="1022.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">员工 SSO</text>
+<rect x="1238.75" y="980" width="161.25" height="64" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="1238.75" y="980" width="5" height="64" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<path d="M1260.75,1003.0 l7.5,3.0 v4.5 c0,5.0 -3.5,8.0 -7.5,10.5 c-4.0,-2.5 -7.5,-5.5 -7.5,-10.5 v-4.5 z" fill="#475569" opacity="0.85"/>
+<text x="1339.375" y="1001.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">JumpServer</text>
+<text x="1339.375" y="1022.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">堡垒机 · 审计</text>
+</svg>

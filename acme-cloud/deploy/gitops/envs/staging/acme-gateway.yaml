@@ -1,0 +1,40 @@
+# 预发布环境：与生产同构（同样的拓扑、同样的配置项、脱敏后的生产数据），用于上线前回归与压测。
+# 由 Argo CD ApplicationSet 读取，与 deploy/helm/acme-service/values.yaml 合并。
+
+appName: acme-gateway
+env: staging
+
+image:
+  repository: registry.acme.com/acme/acme-gateway
+  tag: "3f9c2ab"
+
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 4
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    memory: 1Gi
+
+secretName: acme-gateway-secrets  # REDIS_PASSWORD
+
+extraEnv:
+  TRACING_SAMPLING_PROBABILITY: "1.0"
+
+ingress:
+  enabled: true
+  # 自建：ingress-nginx；阿里云 ACK 改为 alb 并使用 alb.ingress.kubernetes.io/* 注解
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: acme-ca
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+  hosts:
+    - host: api.staging.acme.com
+      path: /
+  tls:
+    - secretName: acme-gateway-tls
+      hosts:
+        - api.staging.acme.com

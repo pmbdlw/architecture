@@ -1,0 +1,19 @@
+{{- if .Values.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "acme.name" . }}
+  labels:
+    {{- include "acme.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "acme.serviceSelector" . | nindent 4 }}
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: management
+      port: {{ .Values.ports.management }}
+      targetPort: management
+{{- end }}

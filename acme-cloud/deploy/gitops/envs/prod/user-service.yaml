@@ -1,0 +1,31 @@
+# 生产环境：多可用区、按 digest 部署、人工确认同步（Argo CD manual sync）。
+# 由 Argo CD ApplicationSet 读取，与 deploy/helm/acme-service/values.yaml 合并。
+
+appName: user-service
+env: prod
+
+image:
+  repository: registry.acme.com/acme/user-service
+  tag: "3f9c2ab"
+  digest: "sha256:<CI 写入镜像 digest>"
+
+autoscaling:
+  minReplicas: 3
+  maxReplicas: 20
+
+resources:
+  requests:
+    cpu: 1
+    memory: 2Gi
+  limits:
+    memory: 2Gi
+
+secretName: user-service-secrets  # DB_URL / DB_USERNAME / DB_PASSWORD 等，由 ExternalSecret 生成
+
+extraEnv:
+  TRACING_SAMPLING_PROBABILITY: "0.1"
+  API_DOCS_ENABLED: "false"
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1

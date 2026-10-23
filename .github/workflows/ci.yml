@@ -1,0 +1,33 @@
+name: acme-cloud CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+    paths: ["acme-cloud/**", ".github/workflows/ci.yml"]
+  pull_request:
+    paths: ["acme-cloud/**", ".github/workflows/ci.yml"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: acme-cloud
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: 构建与测试（Kafka Binder）
+        run: mvn -B -ntp verify
+      - name: 编译校验（RabbitMQ Binder）
+        run: mvn -B -ntp -Prabbit -DskipTests package
+      - uses: azure/setup-helm@v4
+      - name: Helm 模板校验
+        run: |
+          for f in deploy/gitops/envs/*/*.yaml; do
+            helm template check deploy/helm/acme-service -f "$f" > /dev/null
+          done
+          helm lint deploy/helm/acme-service --set appName=lint

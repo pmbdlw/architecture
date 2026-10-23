@@ -1,0 +1,19 @@
+# Nacos 命名空间：staging    Data ID：acme-common.yaml    Group：DEFAULT_GROUP
+# 所有服务共享的“可动态调整”配置。不允许出现密码、密钥等敏感信息。
+logging:
+  level:
+    com.acme: INFO
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 1000
+            read-timeout: 3000

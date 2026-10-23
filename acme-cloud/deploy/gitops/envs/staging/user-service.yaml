@@ -1,0 +1,26 @@
+# 预发布环境：与生产同构（同样的拓扑、同样的配置项、脱敏后的生产数据），用于上线前回归与压测。
+# 由 Argo CD ApplicationSet 读取，与 deploy/helm/acme-service/values.yaml 合并。
+
+appName: user-service
+env: staging
+
+image:
+  repository: registry.acme.com/acme/user-service
+  tag: "3f9c2ab"
+
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 4
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    memory: 1Gi
+
+secretName: user-service-secrets  # DB_URL / DB_USERNAME / DB_PASSWORD 等，由 ExternalSecret 生成
+
+extraEnv:
+  TRACING_SAMPLING_PROBABILITY: "1.0"
+  API_DOCS_ENABLED: "false"

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: acme-service
+description: acme-cloud 所有 Spring Boot 服务共用的通用 Chart（网关、认证中心、业务服务）
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

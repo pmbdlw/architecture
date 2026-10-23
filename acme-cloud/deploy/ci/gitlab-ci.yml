@@ -1,0 +1,81 @@
+# =====================================================================
+# 团队 GitLab 流水线模板（自建方案；阿里云可用云效 Flow 实现同样的阶段）。
+# 原则：一次构建、处处部署 —— 镜像只在 main 构建一次，按 digest 从 test 晋级到 staging、prod。
+# =====================================================================
+stages: [verify, image, deploy-test, deploy-staging, deploy-prod]
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  REGISTRY: registry.acme.com/acme
+  GITOPS_DIR: acme-cloud/deploy/gitops/envs
+
+default:
+  cache:
+    key: maven
+    paths: [.m2/repository]
+
+# 1. 编译、单元/集成测试、架构规则（ArchUnit）、静态扫描
+verify:
+  stage: verify
+  image: maven:3.9-eclipse-temurin-21
+  script:
+    - cd acme-cloud
+    - mvn -B -ntp verify
+    - mvn -B -ntp sonar:sonar -Dsonar.host.url=$SONAR_URL -Dsonar.token=$SONAR_TOKEN || true
+  artifacts:
+    paths: [acme-cloud/**/target/app.jar]
+    reports:
+      junit: acme-cloud/**/target/surefire-reports/TEST-*.xml
+
+# 2. 构建镜像 + 漏洞扫描 + 推送（只在 main 分支）
+.image:
+  stage: image
+  image: docker:28
+  services: [docker:28-dind]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - cd acme-cloud
+    - docker build -f deploy/docker/Dockerfile --build-arg MODULE=$MODULE -t $REGISTRY/$SERVICE:$CI_COMMIT_SHORT_SHA .
+    - trivy image --exit-code 1 --severity CRITICAL $REGISTRY/$SERVICE:$CI_COMMIT_SHORT_SHA
+    - docker push $REGISTRY/$SERVICE:$CI_COMMIT_SHORT_SHA
+    - docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY/$SERVICE:$CI_COMMIT_SHORT_SHA | cut -d@ -f2 > digest-$SERVICE.txt
+  artifacts:
+    paths: [acme-cloud/digest-*.txt]
+
+image:order-service:
+  extends: .image
+  variables: { SERVICE: order-service, MODULE: acme-services/order-service/order-server }
+# user-service / notification-service / acme-gateway / acme-auth 同理
+
+# 3. 更新 GitOps 仓库中的镜像版本，Argo CD 自动同步到测试集群
+deploy-test:
+  stage: deploy-test
+  image: mikefarah/yq:4
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - for f in $GITOPS_DIR/test/*.yaml; do yq -i ".image.tag = \"$CI_COMMIT_SHORT_SHA\"" $f; done
+    - git commit -am "deploy(test): $CI_COMMIT_SHORT_SHA" && git push origin HEAD:main
+
+# 4. 预发布：测试通过后人工晋级（同一镜像）
+deploy-staging:
+  stage: deploy-staging
+  when: manual
+  image: mikefarah/yq:4
+  script:
+    - for f in $GITOPS_DIR/staging/*.yaml; do yq -i ".image.tag = \"$CI_COMMIT_SHORT_SHA\"" $f; done
+    - git commit -am "deploy(staging): $CI_COMMIT_SHORT_SHA" && git push origin HEAD:main
+
+# 5. 生产：变更单审批后晋级，写入 digest；Argo CD 中由发布负责人手动 Sync（可先发灰度）
+deploy-prod:
+  stage: deploy-prod
+  when: manual
+  environment: production
+  image: mikefarah/yq:4
+  script:
+    - for f in $GITOPS_DIR/prod/*.yaml; do
+        svc=$(yq '.appName' $f);
+        yq -i ".image.tag = \"$CI_COMMIT_SHORT_SHA\" | .image.digest = \"$(cat acme-cloud/digest-$svc.txt)\"" $f;
+      done
+    - git commit -am "deploy(prod): $CI_COMMIT_SHORT_SHA" && git push origin HEAD:main

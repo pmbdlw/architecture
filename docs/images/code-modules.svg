@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 740" width="1440" height="740" role="img" aria-label="代码模块与依赖"><title>代码模块与依赖</title><defs><marker id="arr0f172a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f172a"/></marker></defs><rect width="1440" height="740" fill="#ffffff"/>
+<text x="28" y="34" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="22" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="middle">代码模块结构与依赖关系（acme-cloud）</text>
+<text x="28" y="62" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">依赖只能自上而下；业务服务只依赖平台 starter 与其它服务的 api 模块，三方依赖版本全部由根 POM 的 BOM 锁定</text>
+<rect x="20" y="100" width="860" height="108" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+<text x="38" y="144" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="16" font-weight="700" fill="#14532d" text-anchor="start" dominant-baseline="middle">可部署单元</text>
+<text x="38" y="168" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">每个模块打一个镜像</text>
+<rect x="180.0" y="118" width="130.0" height="72" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="180.0" y="118" width="5" height="72" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="247.0" y="143.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">acme-gateway</text>
+<text x="247.0" y="164.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">网关</text>
+<rect x="320.0" y="118" width="130.0" height="72" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="320.0" y="118" width="5" height="72" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="387.0" y="143.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">acme-auth</text>
+<text x="387.0" y="164.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">认证中心</text>
+<rect x="460.0" y="118" width="130.0" height="72" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="460.0" y="118" width="5" height="72" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="527.0" y="143.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">user-server</text>
+<text x="527.0" y="164.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">用户服务</text>
+<rect x="600.0" y="118" width="130.0" height="72" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="600.0" y="118" width="5" height="72" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="667.0" y="143.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">order-server</text>
+<text x="667.0" y="164.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">订单服务</text>
+<rect x="740.0" y="118" width="130.0" height="72" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="740.0" y="118" width="5" height="72" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="807.0" y="143.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">notification-server</text>
+<text x="807.0" y="164.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">通知服务</text>
+<path d="M100,208 L100,226" fill="none" stroke="#0f172a" stroke-width="2" marker-end="url(#arr0f172a)" stroke-linejoin="round"/>
+<rect x="20" y="228" width="860" height="108" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text x="38" y="272" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="16" font-weight="700" fill="#4c1d95" text-anchor="start" dominant-baseline="middle">服务契约</text>
+<text x="38" y="296" font-family="'JetBrains Mono','SFMono-Regular',Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">xxx-api</text>
+<rect x="180.0" y="246" width="340.0" height="72" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+<rect x="180.0" y="246" width="5" height="72" rx="2" fill="#7c3aed" stroke="none" stroke-width="1.5"/>
+<text x="352.0" y="271.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#4c1d95" text-anchor="middle" dominant-baseline="middle">user-api</text>
+<text x="352.0" y="292.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Feign 接口 · DTO</text>
+<rect x="530.0" y="246" width="340.0" height="72" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+<rect x="530.0" y="246" width="5" height="72" rx="2" fill="#7c3aed" stroke="none" stroke-width="1.5"/>
+<text x="702.0" y="271.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#4c1d95" text-anchor="middle" dominant-baseline="middle">order-api</text>
+<text x="702.0" y="292.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">领域事件</text>
+<path d="M100,336 L100,354" fill="none" stroke="#0f172a" stroke-width="2" marker-end="url(#arr0f172a)" stroke-linejoin="round"/>
+<rect x="20" y="356" width="860" height="108" rx="10" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.4"/>
+<text x="38" y="400" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="16" font-weight="700" fill="#0c4a6e" text-anchor="start" dominant-baseline="middle">平台 starter</text>
+<text x="38" y="424" font-family="'JetBrains Mono','SFMono-Regular',Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">acme-framework</text>
+<rect x="180.0" y="374" width="106.66666666666667" height="72" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
+<rect x="180.0" y="374" width="5" height="72" rx="2" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="235.33333333333334" y="399.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">starter-web</text>
+<text x="235.33333333333334" y="420.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">异常 · Result</text>
+<rect x="296.6666666666667" y="374" width="106.66666666666667" height="72" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
+<rect x="296.6666666666667" y="374" width="5" height="72" rx="2" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="352.0" y="399.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">starter-feign</text>
+<text x="352.0" y="420.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">调用 · 熔断</text>
+<rect x="413.33333333333337" y="374" width="106.66666666666667" height="72" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
+<rect x="413.33333333333337" y="374" width="5" height="72" rx="2" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="468.6666666666667" y="399.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">starter-mybatis</text>
+<text x="468.6666666666667" y="420.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">持久层 · Flyway</text>
+<rect x="530.0" y="374" width="106.66666666666667" height="72" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
+<rect x="530.0" y="374" width="5" height="72" rx="2" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="585.3333333333334" y="399.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">starter-mq</text>
+<text x="585.3333333333334" y="420.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Stream · Outbox</text>
+<rect x="646.6666666666667" y="374" width="106.66666666666667" height="72" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
+<rect x="646.6666666666667" y="374" width="5" height="72" rx="2" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="702.0000000000001" y="399.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">starter-security</text>
+<text x="702.0000000000001" y="420.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">JWT 资源服务</text>
+<rect x="763.3333333333334" y="374" width="106.66666666666667" height="72" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
+<rect x="763.3333333333334" y="374" width="5" height="72" rx="2" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="818.6666666666667" y="399.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">starter-test</text>
+<text x="818.6666666666667" y="420.25" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">测试规范</text>
+<path d="M100,464 L100,482" fill="none" stroke="#0f172a" stroke-width="2" marker-end="url(#arr0f172a)" stroke-linejoin="round"/>
+<rect x="20" y="484" width="860" height="108" rx="10" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.4"/>
+<text x="38" y="528" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="16" font-weight="700" fill="#0c4a6e" text-anchor="start" dominant-baseline="middle">基座</text>
+<text x="38" y="552" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">所有服务必选</text>
+<rect x="180.0" y="502" width="340.0" height="72" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
+<rect x="180.0" y="502" width="5" height="72" rx="2" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="352.0" y="527.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">starter-base</text>
+<text x="352.0" y="548.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Nacos · 灰度LB · 可观测 · 默认配置</text>
+<rect x="530.0" y="502" width="340.0" height="72" rx="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
+<rect x="530.0" y="502" width="5" height="72" rx="2" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="702.0" y="527.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">common-core</text>
+<text x="702.0" y="548.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Result · 错误码 · 常量（纯 Java）</text>
+<path d="M100,592 L100,610" fill="none" stroke="#0f172a" stroke-width="2" marker-end="url(#arr0f172a)" stroke-linejoin="round"/>
+<rect x="20" y="612" width="860" height="108" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.4"/>
+<text x="38" y="656" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="16" font-weight="700" fill="#1e293b" text-anchor="start" dominant-baseline="middle">版本基线</text>
+<text x="38" y="680" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">根 POM 统一管理</text>
+<rect x="180.0" y="630" width="165.0" height="72" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="180.0" y="630" width="5" height="72" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<text x="264.5" y="655.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Spring Boot 4.0.9</text>
+<text x="264.5" y="676.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Java 21</text>
+<rect x="355.0" y="630" width="165.0" height="72" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="355.0" y="630" width="5" height="72" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<text x="439.5" y="655.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Spring Cloud 2025.1.4</text>
+<text x="439.5" y="676.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Oakwood</text>
+<rect x="530.0" y="630" width="165.0" height="72" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="530.0" y="630" width="5" height="72" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<text x="614.5" y="655.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Spring Cloud Alibaba</text>
+<text x="614.5" y="676.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">2025.1.0.0</text>
+<rect x="705.0" y="630" width="165.0" height="72" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="705.0" y="630" width="5" height="72" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<text x="789.5" y="655.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">MyBatis-Plus 3.5.17</text>
+<text x="789.5" y="676.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">springdoc 3.0.3</text>
+<text x="910" y="112" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="16" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="middle">依赖矩阵</text>
+<text x="910" y="136" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">● 直接依赖   ○ 传递依赖</text>
+<text x="1084.0" y="246" font-family="'JetBrains Mono',Consolas,monospace" font-size="12.5" fill="#334155" transform="rotate(-55 1084.0 246)">starter-base</text>
+<text x="1120.0" y="246" font-family="'JetBrains Mono',Consolas,monospace" font-size="12.5" fill="#334155" transform="rotate(-55 1120.0 246)">starter-web</text>
+<text x="1156.0" y="246" font-family="'JetBrains Mono',Consolas,monospace" font-size="12.5" fill="#334155" transform="rotate(-55 1156.0 246)">starter-feign</text>
+<text x="1192.0" y="246" font-family="'JetBrains Mono',Consolas,monospace" font-size="12.5" fill="#334155" transform="rotate(-55 1192.0 246)">starter-mybatis</text>
+<text x="1228.0" y="246" font-family="'JetBrains Mono',Consolas,monospace" font-size="12.5" fill="#334155" transform="rotate(-55 1228.0 246)">starter-mq</text>
+<text x="1264.0" y="246" font-family="'JetBrains Mono',Consolas,monospace" font-size="12.5" fill="#334155" transform="rotate(-55 1264.0 246)">starter-security</text>
+<text x="1300.0" y="246" font-family="'JetBrains Mono',Consolas,monospace" font-size="12.5" fill="#334155" transform="rotate(-55 1300.0 246)">starter-test</text>
+<text x="1336.0" y="246" font-family="'JetBrains Mono',Consolas,monospace" font-size="12.5" fill="#334155" transform="rotate(-55 1336.0 246)">user-api</text>
+<text x="1372.0" y="246" font-family="'JetBrains Mono',Consolas,monospace" font-size="12.5" fill="#334155" transform="rotate(-55 1372.0 246)">order-api</text>
+<rect x="900" y="260" width="498" height="42" rx="6" fill="#f8fafc" stroke="none" stroke-width="1.5"/>
+<text x="912" y="281.0" font-family="'JetBrains Mono','SFMono-Regular',Consolas,'Liberation Mono',monospace" font-size="13" font-weight="600" fill="#14532d" text-anchor="start" dominant-baseline="middle">acme-gateway</text>
+<circle cx="1084.0" cy="281.0" r="7" fill="#16a34a"/>
+<rect x="900" y="308" width="498" height="42" rx="6" fill="#ffffff" stroke="none" stroke-width="1.5"/>
+<text x="912" y="329.0" font-family="'JetBrains Mono','SFMono-Regular',Consolas,'Liberation Mono',monospace" font-size="13" font-weight="600" fill="#14532d" text-anchor="start" dominant-baseline="middle">acme-auth</text>
+<circle cx="1084.0" cy="329.0" r="7" fill="#16a34a"/>
+<rect x="900" y="356" width="498" height="42" rx="6" fill="#f8fafc" stroke="none" stroke-width="1.5"/>
+<text x="912" y="377.0" font-family="'JetBrains Mono','SFMono-Regular',Consolas,'Liberation Mono',monospace" font-size="13" font-weight="600" fill="#14532d" text-anchor="start" dominant-baseline="middle">user-server</text>
+<circle cx="1084.0" cy="377.0" r="6.5" fill="#fff" stroke="#16a34a" stroke-width="2"/>
+<circle cx="1120.0" cy="377.0" r="7" fill="#16a34a"/>
+<circle cx="1192.0" cy="377.0" r="7" fill="#16a34a"/>
+<circle cx="1264.0" cy="377.0" r="7" fill="#16a34a"/>
+<circle cx="1300.0" cy="377.0" r="7" fill="#16a34a"/>
+<circle cx="1336.0" cy="377.0" r="7" fill="#16a34a"/>
+<rect x="900" y="404" width="498" height="42" rx="6" fill="#ffffff" stroke="none" stroke-width="1.5"/>
+<text x="912" y="425.0" font-family="'JetBrains Mono','SFMono-Regular',Consolas,'Liberation Mono',monospace" font-size="13" font-weight="600" fill="#14532d" text-anchor="start" dominant-baseline="middle">order-server</text>
+<circle cx="1084.0" cy="425.0" r="6.5" fill="#fff" stroke="#16a34a" stroke-width="2"/>
+<circle cx="1120.0" cy="425.0" r="7" fill="#16a34a"/>
+<circle cx="1156.0" cy="425.0" r="7" fill="#16a34a"/>
+<circle cx="1192.0" cy="425.0" r="7" fill="#16a34a"/>
+<circle cx="1228.0" cy="425.0" r="7" fill="#16a34a"/>
+<circle cx="1264.0" cy="425.0" r="7" fill="#16a34a"/>
+<circle cx="1300.0" cy="425.0" r="7" fill="#16a34a"/>
+<circle cx="1336.0" cy="425.0" r="7" fill="#16a34a"/>
+<circle cx="1372.0" cy="425.0" r="7" fill="#16a34a"/>
+<rect x="900" y="452" width="498" height="42" rx="6" fill="#f8fafc" stroke="none" stroke-width="1.5"/>
+<text x="912" y="473.0" font-family="'JetBrains Mono','SFMono-Regular',Consolas,'Liberation Mono',monospace" font-size="13" font-weight="600" fill="#14532d" text-anchor="start" dominant-baseline="middle">notification-server</text>
+<circle cx="1084.0" cy="473.0" r="6.5" fill="#fff" stroke="#16a34a" stroke-width="2"/>
+<circle cx="1120.0" cy="473.0" r="7" fill="#16a34a"/>
+<circle cx="1192.0" cy="473.0" r="7" fill="#16a34a"/>
+<circle cx="1228.0" cy="473.0" r="7" fill="#16a34a"/>
+<circle cx="1264.0" cy="473.0" r="7" fill="#16a34a"/>
+<circle cx="1300.0" cy="473.0" r="7" fill="#16a34a"/>
+<circle cx="1372.0" cy="473.0" r="7" fill="#16a34a"/>
+<circle cx="912" cy="530" r="3.5" fill="#475569"/>
+<text x="924" y="530" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">网关是 WebFlux 应用，不依赖 starter-web（Servlet）</text>
+<circle cx="912" cy="558" r="3.5" fill="#475569"/>
+<text x="924" y="558" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">starter-feign / mq 只在需要时引入，不做“全家桶”</text>
+<circle cx="912" cy="586" r="3.5" fill="#475569"/>
+<text x="924" y="586" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">消息 Binder（Kafka / RabbitMQ）由服务 pom 的 profile 选择</text>
+<circle cx="912" cy="614" r="3.5" fill="#475569"/>
+<text x="924" y="614" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="400" fill="#334155" text-anchor="start" dominant-baseline="middle">新增服务：复制 user-service 目录并改名</text>
+</svg>

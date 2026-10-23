@@ -1,0 +1,9 @@
+# 每个集群一个业务命名空间 acme；中间件、监控、Ingress 各自独立命名空间。
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: acme
+  labels:
+    acme.com/part-of: acme-cloud
+    # Pod Security Admission：业务命名空间强制 restricted 级别
+    pod-security.kubernetes.io/enforce: restricted

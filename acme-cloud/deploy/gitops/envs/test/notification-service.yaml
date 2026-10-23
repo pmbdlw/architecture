@@ -1,0 +1,26 @@
+# 测试环境：功能测试/联调。规模最小，允许客户端指定灰度标签便于测试指定版本。
+# 由 Argo CD ApplicationSet 读取，与 deploy/helm/acme-service/values.yaml 合并。
+
+appName: notification-service
+env: test
+
+image:
+  repository: registry.acme.com/acme/notification-service
+  tag: "3f9c2ab"
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 2
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 768Mi
+  limits:
+    memory: 768Mi
+
+secretName: notification-service-secrets  # DB_URL / DB_USERNAME / DB_PASSWORD 等，由 ExternalSecret 生成
+
+extraEnv:
+  TRACING_SAMPLING_PROBABILITY: "1.0"
+  API_DOCS_ENABLED: "true"

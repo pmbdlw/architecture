@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 704" width="1440" height="704" role="img" aria-label="AWS 与 Azure 对应部署架构"><title>AWS 与 Azure 对应部署架构</title><defs><marker id="arr232f3e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#232f3e"/></marker><marker id="arr0078d4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0078d4"/></marker></defs><rect width="1440" height="704" fill="#ffffff"/>
+<text x="28" y="34" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="22" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="middle">AWS / Azure 对应部署架构（简图）</text>
+<text x="28" y="62" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">应用代码、Helm Chart、GitOps 流程完全复用；只替换托管云产品与 platform-env 中的地址、身份绑定方式</text>
+<rect x="20" y="92" width="690" height="590" rx="14" fill="#fff7e6" stroke="#232f3e" stroke-width="1.8"/>
+<rect x="20" y="92" width="690" height="50" rx="14" fill="#232f3e" stroke="none" stroke-width="1.5"/>
+<rect x="20" y="126" width="690" height="16" rx="0" fill="#232f3e" stroke="none" stroke-width="1.5"/>
+<text x="44" y="118" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="19" font-weight="700" fill="#fff" text-anchor="start" dominant-baseline="middle">Amazon Web Services</text>
+<rect x="40.0" y="162" width="199.33333333333334" height="60" rx="8" fill="#ffffff" stroke="#232f3e" stroke-width="1.5"/>
+<rect x="40.0" y="162" width="5" height="60" rx="2" fill="#232f3e" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#232f3e" stroke-width="1.6"><circle cx="62.0" cy="192.0" r="8.5"/><ellipse cx="62.0" cy="192.0" rx="3.8" ry="8.5"/><line x1="53.5" y1="192.0" x2="70.5" y2="192.0"/></g>
+<text x="159.66666666666669" y="181.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="600" fill="#232f3e" text-anchor="middle" dominant-baseline="middle">Route 53</text>
+<text x="159.66666666666669" y="203.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">DNS</text>
+<rect x="265.33333333333337" y="162" width="199.33333333333334" height="60" rx="8" fill="#ffffff" stroke="#232f3e" stroke-width="1.5"/>
+<rect x="265.33333333333337" y="162" width="5" height="60" rx="2" fill="#232f3e" stroke="none" stroke-width="1.5"/>
+<path d="M287.33333333333337,183.0 l7.5,3.0 v4.5 c0,5.0 -3.5,8.0 -7.5,10.5 c-4.0,-2.5 -7.5,-5.5 -7.5,-10.5 v-4.5 z" fill="#232f3e" opacity="0.85"/>
+<text x="385.00000000000006" y="181.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="600" fill="#232f3e" text-anchor="middle" dominant-baseline="middle">CloudFront + WAF</text>
+<text x="385.00000000000006" y="203.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">CDN · 防护</text>
+<path d="M241.33333333333337,192 L263.33333333333337,192" fill="none" stroke="#232f3e" stroke-width="1.8" marker-end="url(#arr232f3e)" stroke-linejoin="round"/>
+<rect x="490.6666666666667" y="162" width="199.33333333333334" height="60" rx="8" fill="#ffffff" stroke="#232f3e" stroke-width="1.5"/>
+<rect x="490.6666666666667" y="162" width="5" height="60" rx="2" fill="#232f3e" stroke="none" stroke-width="1.5"/>
+<circle cx="512.6666666666667" cy="192.0" r="8.5" fill="none" stroke="#232f3e" stroke-width="1.8"/>
+<path d="M507.66666666666674,192.0 h10.0 M514.6666666666667,189.0 l3.0,3.0 l-3.0,3.0" stroke="#232f3e" stroke-width="1.8" fill="none"/>
+<text x="610.3333333333334" y="181.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="600" fill="#232f3e" text-anchor="middle" dominant-baseline="middle">ALB</text>
+<text x="610.3333333333334" y="203.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">LB Controller</text>
+<path d="M466.6666666666667,192 L488.6666666666667,192" fill="none" stroke="#232f3e" stroke-width="1.8" marker-end="url(#arr232f3e)" stroke-linejoin="round"/>
+<path d="M365,222 L365,246" fill="none" stroke="#232f3e" stroke-width="1.8" marker-end="url(#arr232f3e)" stroke-linejoin="round"/>
+<rect x="40" y="258" width="650" height="214" rx="12" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="52" y="245" width="100.40000000000002" height="26" rx="13" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="102.20000000000002" y="258" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="middle">Amazon EKS</text>
+<rect x="160.40000000000003" y="247" width="219.0" height="22" rx="11" fill="#ffffff" stroke="#0284c7" stroke-width="1"/>
+<text x="269.90000000000003" y="258.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">多 AZ · 托管节点组 / Karpenter</text>
+<rect x="56" y="284" width="618" height="40" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<rect x="56" y="284" width="5" height="40" rx="2" fill="#2563eb" stroke="none" stroke-width="1.5"/>
+<text x="367.0" y="302.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e3a8a" text-anchor="middle" dominant-baseline="middle">Ingress（AWS Load Balancer Controller）→ acme-gateway（Spring Cloud Gateway）</text>
+<rect x="56" y="336" width="300" height="56" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+<rect x="56" y="336" width="5" height="56" rx="2" fill="#7c3aed" stroke="none" stroke-width="1.5"/>
+<text x="208.0" y="353.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#4c1d95" text-anchor="middle" dominant-baseline="middle">acme-gateway · acme-auth</text>
+<text x="208.0" y="374.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">网关 · 认证中心</text>
+<rect x="374" y="336" width="300" height="56" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="374" y="336" width="5" height="56" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="526.0" y="353.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">user / order / notification</text>
+<text x="526.0" y="374.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">业务服务（同一镜像）</text>
+<rect x="56" y="404" width="618" height="52" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+<rect x="56" y="404" width="5" height="52" rx="2" fill="#7c3aed" stroke="none" stroke-width="1.5"/>
+<circle cx="78" cy="430.0" r="8.5" fill="none" stroke="#7c3aed" stroke-width="1.8"/><path d="M78,424.0 l2.2,6.0 l-2.2,6.0 l-2.2,-6.0 z" fill="#7c3aed"/>
+<text x="385.0" y="419.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#4c1d95" text-anchor="middle" dominant-baseline="middle">Nacos 集群（StatefulSet ×3）</text>
+<text x="385.0" y="440.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">托管云无 Nacos：在集群内自建；或改用 Spring Cloud Kubernetes 方案</text>
+<text x="44" y="492" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="700" fill="#232f3e" text-anchor="start" dominant-baseline="middle">数据与中间件</text>
+<rect x="40.0" y="504" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+<rect x="40.0" y="504" width="5" height="56" rx="2" fill="#d97706" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#d97706" stroke-width="1.8"><ellipse cx="62.0" cy="526.0" rx="8.0" ry="3.0"/><path d="M54.0,526.0 v12.0 a8.0,3.0 0 0 0 16.0,0 v-12.0"/><path d="M54.0,532.0 a8.0,3.0 0 0 0 16.0,0"/></g>
+<text x="164.33333333333331" y="521.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#78350f" text-anchor="middle" dominant-baseline="middle">Aurora / RDS MySQL</text>
+<text x="164.33333333333331" y="542.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">或 RDS PostgreSQL</text>
+<rect x="260.66666666666663" y="504" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+<rect x="260.66666666666663" y="504" width="5" height="56" rx="2" fill="#d97706" stroke="none" stroke-width="1.5"/>
+<path d="M284.16666666666663,523.0 l-6.5,10.0 h5.0 l-2.0,8.0 l7.0,-10.5 h-5.0 z" fill="#d97706"/>
+<text x="384.99999999999994" y="521.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#78350f" text-anchor="middle" dominant-baseline="middle">ElastiCache</text>
+<text x="384.99999999999994" y="542.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Valkey / Redis</text>
+<rect x="481.3333333333333" y="504" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+<rect x="481.3333333333333" y="504" width="5" height="56" rx="2" fill="#d97706" stroke="none" stroke-width="1.5"/>
+<rect x="494.8333333333333" y="527.5" width="4.5" height="9.0" rx="2" fill="#d97706" opacity="0.45"/>
+<rect x="500.8333333333333" y="527.5" width="4.5" height="9.0" rx="2" fill="#d97706" opacity="0.7"/>
+<rect x="506.8333333333333" y="527.5" width="4.5" height="9.0" rx="2" fill="#d97706" opacity="0.95"/>
+<text x="605.6666666666666" y="521.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#78350f" text-anchor="middle" dominant-baseline="middle">Amazon MSK</text>
+<text x="605.6666666666666" y="542.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">或 Amazon MQ RabbitMQ</text>
+<text x="44" y="584" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="700" fill="#232f3e" text-anchor="start" dominant-baseline="middle">安全 · 可观测 · 交付</text>
+<rect x="40.0" y="596" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="40.0" y="596" width="5" height="56" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g><rect x="55.5" y="623.0" width="13.0" height="9.5" rx="2" fill="#475569"/><path d="M58.0,623.0 v-3.0 a4.0,4.0 0 0 1 8.0,0 v3.0" fill="none" stroke="#475569" stroke-width="1.8"/></g>
+<text x="164.33333333333331" y="613.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Secrets Manager</text>
+<text x="164.33333333333331" y="634.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">+ IRSA / Pod Identity</text>
+<rect x="260.66666666666663" y="596" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="260.66666666666663" y="596" width="5" height="56" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g fill="#475569"><rect x="274.66666666666663" y="624.0" width="3.5" height="8.0"/><rect x="280.66666666666663" y="619.5" width="3.5" height="12.5"/><rect x="286.66666666666663" y="616.0" width="3.5" height="16.0"/></g>
+<text x="384.99999999999994" y="613.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">AMP + Grafana</text>
+<text x="384.99999999999994" y="634.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">X-Ray(ADOT) · CloudWatch</text>
+<rect x="481.3333333333333" y="596" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="481.3333333333333" y="596" width="5" height="56" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#475569" stroke-width="1.7"><path d="M503.3333333333333,615.5 l8.0,4.0 v9.0 l-8.0,4.0 l-8.0,-4.0 v-9.0 z"/><path d="M495.3333333333333,619.5 l8.0,4.0 l8.0,-4.0 M503.3333333333333,623.5 v13.0"/></g>
+<text x="605.6666666666666" y="613.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">ECR + CodePipeline</text>
+<text x="605.6666666666666" y="634.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">或 GitHub Actions + Argo CD</text>
+<rect x="730" y="92" width="690" height="590" rx="14" fill="#eef6fd" stroke="#0078d4" stroke-width="1.8"/>
+<rect x="730" y="92" width="690" height="50" rx="14" fill="#0078d4" stroke="none" stroke-width="1.5"/>
+<rect x="730" y="126" width="690" height="16" rx="0" fill="#0078d4" stroke="none" stroke-width="1.5"/>
+<text x="754" y="118" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="19" font-weight="700" fill="#fff" text-anchor="start" dominant-baseline="middle">Microsoft Azure</text>
+<rect x="750.0" y="162" width="199.33333333333334" height="60" rx="8" fill="#ffffff" stroke="#0078d4" stroke-width="1.5"/>
+<rect x="750.0" y="162" width="5" height="60" rx="2" fill="#0078d4" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#0078d4" stroke-width="1.6"><circle cx="772.0" cy="192.0" r="8.5"/><ellipse cx="772.0" cy="192.0" rx="3.8" ry="8.5"/><line x1="763.5" y1="192.0" x2="780.5" y2="192.0"/></g>
+<text x="869.6666666666666" y="181.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="600" fill="#003f73" text-anchor="middle" dominant-baseline="middle">Azure DNS</text>
+<text x="869.6666666666666" y="203.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">DNS</text>
+<rect x="975.3333333333334" y="162" width="199.33333333333334" height="60" rx="8" fill="#ffffff" stroke="#0078d4" stroke-width="1.5"/>
+<rect x="975.3333333333334" y="162" width="5" height="60" rx="2" fill="#0078d4" stroke="none" stroke-width="1.5"/>
+<path d="M997.3333333333334,183.0 l7.5,3.0 v4.5 c0,5.0 -3.5,8.0 -7.5,10.5 c-4.0,-2.5 -7.5,-5.5 -7.5,-10.5 v-4.5 z" fill="#0078d4" opacity="0.85"/>
+<text x="1095.0" y="181.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="600" fill="#003f73" text-anchor="middle" dominant-baseline="middle">Front Door + WAF</text>
+<text x="1095.0" y="203.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">CDN · 防护</text>
+<path d="M951.3333333333334,192 L973.3333333333334,192" fill="none" stroke="#0078d4" stroke-width="1.8" marker-end="url(#arr0078d4)" stroke-linejoin="round"/>
+<rect x="1200.6666666666667" y="162" width="199.33333333333334" height="60" rx="8" fill="#ffffff" stroke="#0078d4" stroke-width="1.5"/>
+<rect x="1200.6666666666667" y="162" width="5" height="60" rx="2" fill="#0078d4" stroke="none" stroke-width="1.5"/>
+<circle cx="1222.6666666666667" cy="192.0" r="8.5" fill="none" stroke="#0078d4" stroke-width="1.8"/>
+<path d="M1217.6666666666667,192.0 h10.0 M1224.6666666666667,189.0 l3.0,3.0 l-3.0,3.0" stroke="#0078d4" stroke-width="1.8" fill="none"/>
+<text x="1320.3333333333335" y="181.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="600" fill="#003f73" text-anchor="middle" dominant-baseline="middle">Application Gateway</text>
+<text x="1320.3333333333335" y="203.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">AGIC</text>
+<path d="M1176.6666666666667,192 L1198.6666666666667,192" fill="none" stroke="#0078d4" stroke-width="1.8" marker-end="url(#arr0078d4)" stroke-linejoin="round"/>
+<path d="M1075,222 L1075,246" fill="none" stroke="#0078d4" stroke-width="1.8" marker-end="url(#arr0078d4)" stroke-linejoin="round"/>
+<rect x="750" y="258" width="650" height="214" rx="12" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="762" y="245" width="210.16000000000005" height="26" rx="13" fill="#0284c7" stroke="none" stroke-width="1.5"/>
+<text x="867.08" y="258" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="600" fill="#fff" text-anchor="middle" dominant-baseline="middle">Azure Kubernetes Service</text>
+<rect x="980.1600000000001" y="247" width="188.0" height="22" rx="11" fill="#ffffff" stroke="#0284c7" stroke-width="1"/>
+<text x="1074.16" y="258.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12.5" font-weight="400" fill="#0c4a6e" text-anchor="middle" dominant-baseline="middle">可用性区域 · 节点池 / KEDA</text>
+<rect x="766" y="284" width="618" height="40" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<rect x="766" y="284" width="5" height="40" rx="2" fill="#2563eb" stroke="none" stroke-width="1.5"/>
+<text x="1077.0" y="302.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#1e3a8a" text-anchor="middle" dominant-baseline="middle">Ingress（AGIC / App Routing）→ acme-gateway（Spring Cloud Gateway）</text>
+<rect x="766" y="336" width="300" height="56" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+<rect x="766" y="336" width="5" height="56" rx="2" fill="#7c3aed" stroke="none" stroke-width="1.5"/>
+<text x="918.0" y="353.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#4c1d95" text-anchor="middle" dominant-baseline="middle">acme-gateway · acme-auth</text>
+<text x="918.0" y="374.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">网关 · 认证中心</text>
+<rect x="1084" y="336" width="300" height="56" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+<rect x="1084" y="336" width="5" height="56" rx="2" fill="#16a34a" stroke="none" stroke-width="1.5"/>
+<text x="1236.0" y="353.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#14532d" text-anchor="middle" dominant-baseline="middle">user / order / notification</text>
+<text x="1236.0" y="374.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">业务服务（同一镜像）</text>
+<rect x="766" y="404" width="618" height="52" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+<rect x="766" y="404" width="5" height="52" rx="2" fill="#7c3aed" stroke="none" stroke-width="1.5"/>
+<circle cx="788" cy="430.0" r="8.5" fill="none" stroke="#7c3aed" stroke-width="1.8"/><path d="M788,424.0 l2.2,6.0 l-2.2,6.0 l-2.2,-6.0 z" fill="#7c3aed"/>
+<text x="1095.0" y="419.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="600" fill="#4c1d95" text-anchor="middle" dominant-baseline="middle">Nacos 集群（StatefulSet ×3）</text>
+<text x="1095.0" y="440.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="12" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">托管云无 Nacos：在集群内自建；或改用 Spring Cloud Kubernetes 方案</text>
+<text x="754" y="492" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="700" fill="#003f73" text-anchor="start" dominant-baseline="middle">数据与中间件</text>
+<rect x="750.0" y="504" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+<rect x="750.0" y="504" width="5" height="56" rx="2" fill="#d97706" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#d97706" stroke-width="1.8"><ellipse cx="772.0" cy="526.0" rx="8.0" ry="3.0"/><path d="M764.0,526.0 v12.0 a8.0,3.0 0 0 0 16.0,0 v-12.0"/><path d="M764.0,532.0 a8.0,3.0 0 0 0 16.0,0"/></g>
+<text x="874.3333333333334" y="521.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#78350f" text-anchor="middle" dominant-baseline="middle">Azure Database</text>
+<text x="874.3333333333334" y="542.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">for MySQL / PostgreSQL</text>
+<rect x="970.6666666666666" y="504" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+<rect x="970.6666666666666" y="504" width="5" height="56" rx="2" fill="#d97706" stroke="none" stroke-width="1.5"/>
+<path d="M994.1666666666666,523.0 l-6.5,10.0 h5.0 l-2.0,8.0 l7.0,-10.5 h-5.0 z" fill="#d97706"/>
+<text x="1095.0" y="521.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#78350f" text-anchor="middle" dominant-baseline="middle">Azure Managed Redis</text>
+<text x="1095.0" y="542.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">缓存 · 限流</text>
+<rect x="1191.3333333333333" y="504" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+<rect x="1191.3333333333333" y="504" width="5" height="56" rx="2" fill="#d97706" stroke="none" stroke-width="1.5"/>
+<rect x="1204.8333333333333" y="527.5" width="4.5" height="9.0" rx="2" fill="#d97706" opacity="0.45"/>
+<rect x="1210.8333333333333" y="527.5" width="4.5" height="9.0" rx="2" fill="#d97706" opacity="0.7"/>
+<rect x="1216.8333333333333" y="527.5" width="4.5" height="9.0" rx="2" fill="#d97706" opacity="0.95"/>
+<text x="1315.6666666666665" y="521.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#78350f" text-anchor="middle" dominant-baseline="middle">Event Hubs</text>
+<text x="1315.6666666666665" y="542.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">Kafka 协议端点</text>
+<text x="754" y="584" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="14" font-weight="700" fill="#003f73" text-anchor="start" dominant-baseline="middle">安全 · 可观测 · 交付</text>
+<rect x="750.0" y="596" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="750.0" y="596" width="5" height="56" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g><rect x="765.5" y="623.0" width="13.0" height="9.5" rx="2" fill="#475569"/><path d="M768.0,623.0 v-3.0 a4.0,4.0 0 0 1 8.0,0 v3.0" fill="none" stroke="#475569" stroke-width="1.8"/></g>
+<text x="874.3333333333334" y="613.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Key Vault</text>
+<text x="874.3333333333334" y="634.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">+ Workload Identity</text>
+<rect x="970.6666666666666" y="596" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="970.6666666666666" y="596" width="5" height="56" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g fill="#475569"><rect x="984.6666666666666" y="624.0" width="3.5" height="8.0"/><rect x="990.6666666666666" y="619.5" width="3.5" height="12.5"/><rect x="996.6666666666666" y="616.0" width="3.5" height="16.0"/></g>
+<text x="1095.0" y="613.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">Azure Monitor</text>
+<text x="1095.0" y="634.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">托管 Prometheus · App Insights</text>
+<rect x="1191.3333333333333" y="596" width="208.66666666666666" height="56" rx="8" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+<rect x="1191.3333333333333" y="596" width="5" height="56" rx="2" fill="#475569" stroke="none" stroke-width="1.5"/>
+<g fill="none" stroke="#475569" stroke-width="1.7"><path d="M1213.3333333333333,615.5 l8.0,4.0 v9.0 l-8.0,4.0 l-8.0,-4.0 v-9.0 z"/><path d="M1205.3333333333333,619.5 l8.0,4.0 l8.0,-4.0 M1213.3333333333333,623.5 v13.0"/></g>
+<text x="1315.6666666666665" y="613.75" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#1e293b" text-anchor="middle" dominant-baseline="middle">ACR + Azure DevOps</text>
+<text x="1315.6666666666665" y="634.5" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="11.5" font-weight="400" fill="#475569" text-anchor="middle" dominant-baseline="middle">或 GitHub Actions + Flux</text>
+</svg>

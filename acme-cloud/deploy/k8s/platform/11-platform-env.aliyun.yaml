@@ -1,0 +1,19 @@
+# 平台公共环境变量（方案 B：阿里云）。各地址均为云产品的 VPC 内网接入点（示例值）。
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acme-platform-env
+  namespace: acme
+data:
+  # MSE 微服务引擎 Nacos 版（专业版，3 节点多可用区）
+  NACOS_SERVER_ADDR: "mse-xxxxxxxx-nacos-ans.mse.aliyuncs.com:8848"
+  # 云消息队列 Kafka 版 / 云消息队列 RabbitMQ 版（二选一）
+  KAFKA_BROKERS: "alikafka-post-cn-xxxx-1-vpc.alikafka.aliyuncs.com:9092,alikafka-post-cn-xxxx-2-vpc.alikafka.aliyuncs.com:9092"
+  RABBITMQ_ADDRESSES: "amqp-cn-xxxx.cn-hangzhou.amqp-0.vpc.mq.amqp.aliyuncs.com:5672"
+  # 云数据库 Tair（Redis 开源版兼容）
+  REDIS_HOST: "r-xxxxxxxx.redis.rds.aliyuncs.com"
+  REDIS_PORT: "6379"
+  # ARMS 应用监控 / 可观测链路 OpenTelemetry 版的 OTLP 接入点（VPC）
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://tracing-analysis-dc-hz-internal.aliyuncs.com/adapt_xxxx/api/otlp/traces"
+  AUTH_ISSUER_URI: "https://auth.acme.com"
+  AUTH_JWK_SET_URI: "http://acme-auth.acme.svc.cluster.local/oauth2/jwks"

@@ -1,0 +1,21 @@
+# 平台公共环境变量（方案 A：全自建）。每个环境的集群各一份，由平台团队维护，所有服务 envFrom 引用。
+# 这里只放“地址类”非敏感信息；账号密码一律放 Secret（见 20-external-secrets.yaml）。
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acme-platform-env
+  namespace: acme
+data:
+  # Nacos 集群（3 节点，K8s 外虚机或独立命名空间 StatefulSet），通过内网 SLB/VIP 访问
+  NACOS_SERVER_ADDR: "nacos.middleware.svc.cluster.local:8848"
+  # Kafka（Strimzi Operator 部署）或 RabbitMQ（RabbitMQ Cluster Operator 部署），二选一
+  KAFKA_BROKERS: "acme-kafka-kafka-bootstrap.middleware.svc.cluster.local:9092"
+  RABBITMQ_ADDRESSES: "acme-rabbitmq.middleware.svc.cluster.local:5672"
+  # Redis Cluster / Sentinel
+  REDIS_HOST: "redis.middleware.svc.cluster.local"
+  REDIS_PORT: "6379"
+  # OpenTelemetry Collector（再转发到 Tempo / Jaeger / SkyWalking）
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://otel-collector.observability.svc.cluster.local:4318/v1/traces"
+  # 认证中心：iss 用对外域名，JWK 走集群内地址
+  AUTH_ISSUER_URI: "https://auth.acme.com"
+  AUTH_JWK_SET_URI: "http://acme-auth.acme.svc.cluster.local/oauth2/jwks"

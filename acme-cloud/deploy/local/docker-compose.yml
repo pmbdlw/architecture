@@ -1,0 +1,81 @@
+# 本地开发中间件：docker compose -f deploy/local/docker-compose.yml up -d
+# 默认启动 MySQL + Nacos + Kafka + Redis + Jaeger；
+# PostgreSQL：--profile pg；RabbitMQ：--profile rabbit
+name: acme-local
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      TZ: Asia/Shanghai
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
+    ports: ["3306:3306"]
+    volumes:
+      - ./init-mysql.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-proot"]
+      interval: 5s
+      retries: 20
+
+  postgres:
+    image: postgres:17
+    profiles: ["pg"]
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes:
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  nacos:
+    image: nacos/nacos-server:v3.1.1
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: "true"
+      # 仅本地使用的固定值，任何共享环境都必须替换
+      NACOS_AUTH_TOKEN: "YWNtZS1sb2NhbC1kZXYtb25seS10b2tlbi1rZXktMzJieXRlcy0hISE="
+      NACOS_AUTH_IDENTITY_KEY: acme
+      NACOS_AUTH_IDENTITY_VALUE: acme-local
+    ports:
+      - "8848:8848"     # OpenAPI
+      - "9848:9848"     # gRPC（客户端必需）
+      - "18080:8080"    # 控制台 http://localhost:18080
+    # 首次登录控制台设置 nacos 用户密码为 nacos（与 NACOS_PASSWORD 默认值一致）
+
+  kafka:
+    image: apache/kafka:4.1.0
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      # 本地允许自动建 topic；共享环境由平台创建
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports: ["9092:9092"]
+
+  rabbitmq:
+    image: rabbitmq:4.1-management
+    profiles: ["rabbit"]
+    ports:
+      - "5672:5672"
+      - "15672:15672"   # 管理台 guest/guest
+
+  redis:
+    image: redis:8.2
+    ports: ["6379:6379"]
+
+  jaeger:
+    # 接收 OTLP 链路数据，UI：http://localhost:16686
+    image: jaegertracing/jaeger:2.11.0
+    ports:
+      - "4318:4318"
+      - "16686:16686"
+
+volumes:
+  mysql-data:

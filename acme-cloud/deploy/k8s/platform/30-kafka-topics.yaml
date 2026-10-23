@@ -1,0 +1,28 @@
+# Topic 由平台以代码方式管理（自建 Strimzi；阿里云在控制台/Terraform 创建），应用关闭自动建 topic。
+# 命名：<系统>.<领域>.events；死信：<topic>.<消费组>.dlq
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: acme.order.events
+  namespace: middleware
+  labels:
+    strimzi.io/cluster: acme-kafka
+spec:
+  partitions: 12
+  replicas: 3
+  config:
+    retention.ms: 604800000      # 7 天
+    min.insync.replicas: 2
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: acme.order.events.notification-service.dlq
+  namespace: middleware
+  labels:
+    strimzi.io/cluster: acme-kafka
+spec:
+  partitions: 3
+  replicas: 3
+  config:
+    retention.ms: 2592000000     # 30 天

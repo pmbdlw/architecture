@@ -1,0 +1,31 @@
+# 生产灰度示例：与稳定版同名服务（appName 相同），额外部署一组带 grayTag 的 Pod。
+# 网关按 acme.gateway.gray 规则给请求打 X-Gray-Tag: v2，灰度 LoadBalancer 只把这部分流量导向本组 Pod。
+# 验证通过后：把稳定版 image 更新为新版本，再删除本文件。
+appName: order-service
+env: prod
+grayTag: v2
+
+image:
+  repository: registry.acme.com/acme/order-service
+  tag: "7c41d09"
+  digest: "sha256:<CI 写入镜像 digest>"
+
+autoscaling:
+  enabled: false
+replicaCount: 1
+
+service:
+  # 复用稳定版的 Service
+  enabled: false
+
+resources:
+  requests:
+    cpu: "1"
+    memory: 2Gi
+  limits:
+    memory: 2Gi
+
+secretName: order-service-secrets
+extraEnv:
+  TRACING_SAMPLING_PROBABILITY: "1.0"
+  API_DOCS_ENABLED: "false"

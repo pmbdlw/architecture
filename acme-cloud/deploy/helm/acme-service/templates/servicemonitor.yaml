@@ -1,0 +1,17 @@
+{{- /* Service 同时覆盖稳定版与灰度版 Pod，只由稳定版 Release 创建一个 ServiceMonitor */ -}}
+{{- if and .Values.serviceMonitor.enabled (not .Values.grayTag) }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "acme.fullname" . }}
+  labels:
+    {{- include "acme.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "acme.name" . }}
+  endpoints:
+    - port: management
+      path: /actuator/prometheus
+      interval: {{ .Values.serviceMonitor.interval }}
+{{- end }}
