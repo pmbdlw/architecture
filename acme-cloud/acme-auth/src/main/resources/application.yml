@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: acme-auth
+  config:
+    import:
+      - optional:nacos:acme-common.yaml
+      - optional:nacos:${spring.application.name}.yaml
+  security:
+    oauth2:
+      authorizationserver:
+        # 对外签发的 iss，必须与资源服务配置的 AUTH_ISSUER_URI 完全一致（如 https://auth.acme.com）
+        issuer: ${AUTH_ISSUER_URI:http://127.0.0.1:9000}
+        client:
+          # 前端 SPA / App：授权码 + PKCE，公共客户端不持有密钥
+          acme-web:
+            registration:
+              client-id: acme-web
+              client-authentication-methods: none
+              authorization-grant-types: authorization_code,refresh_token
+              redirect-uris: ${AUTH_WEB_REDIRECT_URIS:http://localhost:3000/callback}
+              post-logout-redirect-uris: ${AUTH_WEB_LOGOUT_URIS:http://localhost:3000/}
+              scopes: openid,profile,order.read,order.write
+            require-proof-key: true
+            require-authorization-consent: false
+            token:
+              access-token-time-to-live: 30m
+              refresh-token-time-to-live: 7d
+          # 后台任务 / 系统集成：客户端凭证模式，密钥来自 K8s Secret
+          acme-internal:
+            registration:
+              client-id: acme-internal
+              client-secret: "{noop}${AUTH_INTERNAL_CLIENT_SECRET:local-only-secret}"
+              client-authentication-methods: client_secret_basic
+              authorization-grant-types: client_credentials
+              scopes: internal
+            token:
+              access-token-time-to-live: 10m
+
+acme:
+  auth:
+    jwk:
+      key-id: ${AUTH_JWK_KEY_ID:acme-dev}
+      public-key: ${AUTH_JWK_PUBLIC_KEY:}
+      private-key: ${AUTH_JWK_PRIVATE_KEY:}
+    # 演示账号（仅 local / test 环境，生产通过 Nacos 配置置空）
+    demo-users:
+      - uid: 1
+        username: admin
+        password: "{noop}${AUTH_DEMO_PASSWORD:password}"
+        roles: [ADMIN, USER]
+      - uid: 1001
+        username: alice
+        password: "{noop}${AUTH_DEMO_PASSWORD:password}"
+        roles: [USER]
+
+server:
+  port: ${SERVER_PORT:9000}
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:9900}

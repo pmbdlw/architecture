@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: notification-service
+  config:
+    import:
+      - optional:nacos:acme-common.yaml
+      - optional:nacos:${spring.application.name}.yaml
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/acme_notification?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+  cloud:
+    function:
+      definition: orderCreated
+    stream:
+      bindings:
+        orderCreated-in-0:
+          destination: acme.order.events
+          # 消费组 = 服务名：同组多副本负载均衡，不同服务各自收到全量事件
+          group: notification-service
+          content-type: application/json
+          consumer:
+            max-attempts: 3
+            back-off-initial-interval: 1000
+            back-off-multiplier: 2.0
+      kafka:
+        bindings:
+          orderCreated-in-0:
+            consumer:
+              # 重试耗尽进入死信 topic，由告警 + 补偿工具处理
+              enable-dlq: true
+              dlq-name: acme.order.events.notification-service.dlq
+      rabbit:
+        bindings:
+          orderCreated-in-0:
+            consumer:
+              exchange-type: topic
+              # 只绑定关心的事件类型
+              binding-routing-key: order.created
+              auto-bind-dlq: true
+              republish-to-dlq: true
+
+server:
+  port: ${SERVER_PORT:8103}
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:9103}

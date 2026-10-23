@@ -27,8 +27,8 @@
 
     <modules>
         <module>acme-framework</module>
-        <!--TMP<module>acme-gateway</module>-->
-        <!--TMP<module>acme-auth</module>-->
+        <module>acme-gateway</module>
+        <module>acme-auth</module>
         <module>acme-services</module>
     </modules>
 

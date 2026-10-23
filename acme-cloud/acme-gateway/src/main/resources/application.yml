@@ -1,0 +1,99 @@
+spring:
+  application:
+    name: acme-gateway
+  config:
+    import:
+      - optional:nacos:acme-common.yaml
+      # 路由、灰度规则、限流阈值放在 Nacos，修改后网关实时刷新，无需重启
+      - optional:nacos:${spring.application.name}.yaml
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH_ISSUER_URI:http://127.0.0.1:9000}
+          jwk-set-uri: ${AUTH_JWK_SET_URI:http://127.0.0.1:9000/oauth2/jwks}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # 只允许显式声明的路由，不自动把注册中心里的所有服务暴露出去
+          discovery:
+            locator:
+              enabled: false
+          httpclient:
+            connect-timeout: 1000
+            response-timeout: 10s
+          default-filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@principalOrIpKeyResolver}"
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+          globalcors:
+            cors-configurations:
+              "[/**]":
+                allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS:http://localhost:*}
+                allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+                allowed-headers: "*"
+                allow-credentials: true
+          routes:
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/api/v1/users/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: user-service
+                    fallbackUri: forward:/fallback/user-service
+            - id: order-service
+              uri: lb://order-service
+              predicates:
+                - Path=/api/v1/orders/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: order-service
+                    fallbackUri: forward:/fallback/order-service
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/v1/notifications/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: notification-service
+                    fallbackUri: forward:/fallback/notification-service
+
+resilience4j:
+  timelimiter:
+    configs:
+      default:
+        # 网关层的整体超时，略大于下游最慢接口
+        timeout-duration: 8s
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 100
+        minimum-number-of-calls: 50
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+
+acme:
+  gateway:
+    gray:
+      enabled: false
+      allow-client-header: ${GRAY_ALLOW_CLIENT_HEADER:false}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:9080}
