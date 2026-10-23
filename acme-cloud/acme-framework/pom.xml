@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.acme</groupId>
+        <artifactId>acme-cloud</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>acme-framework</artifactId>
+    <packaging>pom</packaging>
+    <description>平台公共层：所有业务服务只依赖这里的 starter，不直接拼装三方依赖</description>
+
+    <modules>
+        <module>acme-common-core</module>
+        <module>acme-starter-base</module>
+        <module>acme-starter-web</module>
+        <module>acme-starter-feign</module>
+        <module>acme-starter-mybatis</module>
+        <module>acme-starter-mq</module>
+        <module>acme-starter-security</module>
+        <module>acme-starter-test</module>
+    </modules>
+</project>

@@ -1,0 +1,8 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # 校验 iss 声明；公钥从集群内地址拉取，不绕公网
+          issuer-uri: ${AUTH_ISSUER_URI:http://127.0.0.1:9000}
+          jwk-set-uri: ${AUTH_JWK_SET_URI:http://127.0.0.1:9000/oauth2/jwks}

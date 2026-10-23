@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    # 连接信息只来自环境变量（K8s Secret），禁止写进 Nacos 或代码仓库
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/${spring.application.name}}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      connection-timeout: 3000
+      # 小于数据库/代理（ProxySQL、RDS Proxy、PgBouncer）的空闲断开时间
+      max-lifetime: 1500000
+  flyway:
+    # 按数据库厂商分目录：db/migration/mysql、db/migration/postgresql
+    locations: classpath:db/migration/{vendor}
+    # 生产禁止 clean
+    clean-disabled: true
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: assign_id
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0

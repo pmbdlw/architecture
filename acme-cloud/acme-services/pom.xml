@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.acme</groupId>
+        <artifactId>acme-cloud</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>acme-services</artifactId>
+    <packaging>pom</packaging>
+    <description>业务服务。每个服务 = xxx-api（对外契约：Feign 接口、DTO、事件）+ xxx-server（可部署的 Spring Boot 应用）</description>
+
+    <modules>
+        <module>user-service</module>
+        <module>order-service</module>
+        <!--<module>notification-service</module>-->
+    </modules>
+</project>

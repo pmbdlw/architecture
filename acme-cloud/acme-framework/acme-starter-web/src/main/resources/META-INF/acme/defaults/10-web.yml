@@ -1,0 +1,17 @@
+server:
+  port: ${SERVER_PORT:8080}
+  # 网关在前面处理 TLS，服务内部只走 HTTP；保留真实客户端 IP
+  forward-headers-strategy: framework
+
+spring:
+  mvc:
+    problemdetails:
+      # 统一使用 Result 响应体，不使用 RFC 9457 ProblemDetail
+      enabled: false
+
+springdoc:
+  api-docs:
+    # 生产环境通过环境变量 API_DOCS_ENABLED=false 关闭
+    enabled: ${API_DOCS_ENABLED:true}
+  swagger-ui:
+    enabled: ${API_DOCS_ENABLED:true}

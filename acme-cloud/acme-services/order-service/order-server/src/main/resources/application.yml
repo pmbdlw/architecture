@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: order-service
+  config:
+    import:
+      - optional:nacos:acme-common.yaml
+      - optional:nacos:${spring.application.name}.yaml
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/acme_order?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+  cloud:
+    openfeign:
+      client:
+        config:
+          # 按 contextId 单独调整某个下游的超时
+          userClient:
+            read-timeout: 2000
+    stream:
+      # 声明输出绑定 orderEvents-out-0（由 OutboxRelay 通过 StreamBridge 发送）
+      output-bindings: orderEvents
+      bindings:
+        orderEvents-out-0:
+          destination: acme.order.events
+          content-type: application/json
+      kafka:
+        bindings:
+          orderEvents-out-0:
+            producer:
+              # 同步发送：发送成功后才把发件箱记录标记为已发送
+              sync: true
+              # 以订单 ID 作为消息 key，同一订单的事件落在同一分区，保证顺序
+              message-key-expression: headers['acme_key'].getBytes()
+      rabbit:
+        bindings:
+          orderEvents-out-0:
+            producer:
+              exchange-type: topic
+              # 以事件类型作为 routing key，消费方按需绑定 order.* / order.created
+              routing-key-expression: headers['ce_type']
+
+server:
+  port: ${SERVER_PORT:8102}
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:9102}

@@ -1,0 +1,40 @@
+spring:
+  cloud:
+    openfeign:
+      httpclient:
+        hc5:
+          enabled: true
+      micrometer:
+        enabled: true
+      # 每个 Feign 方法自动包一层 Spring Cloud CircuitBreaker（Resilience4j 实现）
+      circuitbreaker:
+        enabled: true
+        alphanumeric-ids:
+          enabled: true
+      client:
+        config:
+          default:
+            # 超时必须显式设置：连接 1s，读取 3s。慢接口单独按 contextId 放宽
+            connect-timeout: 1000
+            read-timeout: 3000
+            logger-level: basic
+    circuitbreaker:
+      resilience4j:
+        # 关闭 TimeLimiter：超时交给 HTTP 客户端，调用仍在当前线程执行（请求头透传依赖 ThreadLocal）
+        disable-time-limiter: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 50
+        minimum-number-of-calls: 20
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+        slow-call-rate-threshold: 80
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 5
+        # 下游返回的 4xx 业务失败不算故障
+        ignore-exceptions:
+          - com.acme.framework.core.exception.BizException
