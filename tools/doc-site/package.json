@@ -1,0 +1,15 @@
+{
+  "name": "acme-doc-site",
+  "private": true,
+  "type": "module",
+  "description": "把 docs/*.md 生成单文件 HTML（预渲染 Mermaid、预高亮代码、内联 SVG 架构图）",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "highlight.js": "11.11.1",
+    "marked": "16.4.1",
+    "mermaid": "11.12.0",
+    "playwright": "1.56.1"
+  }
+}
