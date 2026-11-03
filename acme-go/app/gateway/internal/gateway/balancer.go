@@ -46,7 +46,7 @@ func (b *balancer) watch(ctx context.Context, service string) {
 		return
 	}
 	go func() {
-		defer w.Stop()
+		defer func() { _ = w.Stop() }()
 		for {
 			list, err := w.Next()
 			if err != nil {
@@ -73,7 +73,7 @@ func (b *balancer) pick(service, grayTag string) string {
 	if len(nodes) == 0 {
 		return ""
 	}
-	n := nodes[int(s.next.Add(1)-1)%len(nodes)]
+	n := nodes[(s.next.Add(1)-1)%uint64(len(nodes))]
 	for _, ep := range n.Endpoints {
 		if strings.HasPrefix(ep, "http://") {
 			return ep

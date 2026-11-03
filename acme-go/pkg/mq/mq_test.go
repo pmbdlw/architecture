@@ -3,6 +3,7 @@ package mq_test
 import (
 	"context"
 	"embed"
+	"errors"
 	"io/fs"
 	"testing"
 	"time"
@@ -33,7 +34,7 @@ func TestOutboxRelayAndIdempotentConsumer(t *testing.T) {
 	bus := gochannel.NewGoChannel(gochannel.Config{Persistent: true}, mq.Logger())
 	outbox := mq.NewOutbox(db, "order-service")
 
-	if _, err := outbox.Publish(ctx, "acme.order.events", "order.created", "1", wrapperspb.String("x")); err != mq.ErrNoTransaction {
+	if _, err := outbox.Publish(ctx, "acme.order.events", "order.created", "1", wrapperspb.String("x")); !errors.Is(err, mq.ErrNoTransaction) {
 		t.Fatalf("publish outside tx should fail, got %v", err)
 	}
 	tx := database.NewTransaction(db)

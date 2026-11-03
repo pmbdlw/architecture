@@ -39,14 +39,16 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer cfg.Close()
+	var cleanup pserver.Cleanup
+	defer cleanup.Run()
+	cleanup.Add(cfg.Close)
 
 	ctx := context.Background()
 	tel, err := observability.Setup(ctx, &c.Bootstrap)
 	if err != nil {
 		return err
 	}
-	defer tel.Shutdown(context.Background())
+	cleanup.Add(func() error { return tel.Shutdown(context.Background()) })
 
 	db, err := database.Open(c.Data.Database)
 	if err != nil {
@@ -65,7 +67,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer publisher.Close()
+	cleanup.Add(publisher.Close)
 
 	var reg interface {
 		registry.Registrar
@@ -83,7 +85,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	cleanup.Add(conn.Close)
 
 	hs, relay := server.New(server.Deps{Conf: &c, Telemetry: tel, DB: db, KeyFunc: keyFunc,
 		Users: userv1.NewUserInternalServiceClient(conn), Publisher: publisher})

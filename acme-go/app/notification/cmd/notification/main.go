@@ -37,14 +37,16 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer cfg.Close()
+	var cleanup pserver.Cleanup
+	defer cleanup.Run()
+	cleanup.Add(cfg.Close)
 
 	ctx := context.Background()
 	tel, err := observability.Setup(ctx, &c.Bootstrap)
 	if err != nil {
 		return err
 	}
-	defer tel.Shutdown(context.Background())
+	cleanup.Add(func() error { return tel.Shutdown(context.Background()) })
 
 	db, err := database.Open(c.Data.Database)
 	if err != nil {
@@ -67,7 +69,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer dlq.Close()
+	cleanup.Add(dlq.Close)
 
 	hs, router, err := server.New(server.Deps{Conf: &c, Telemetry: tel, DB: db, KeyFunc: keyFunc,
 		Subscriber: subscriber, DLQPublisher: dlq})

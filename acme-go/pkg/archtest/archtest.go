@@ -12,6 +12,7 @@ import (
 	"go/parser"
 	"go/token"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -42,8 +43,14 @@ func CheckLayers(t *testing.T, dir string, rules ...Rule) {
 	}
 	for _, rule := range rules {
 		root := filepath.Join(dir, "internal", rule.Layer)
-		_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-			if err != nil || d.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
+		if _, err := os.Stat(root); err != nil {
+			continue // 服务没有这一层（如网关）
+		}
+		err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
 				return nil
 			}
 			f, perr := parser.ParseFile(token.NewFileSet(), path, nil, parser.ImportsOnly)
@@ -61,5 +68,8 @@ func CheckLayers(t *testing.T, dir string, rules ...Rule) {
 			}
 			return nil
 		})
+		if err != nil {
+			t.Errorf("walk %s: %v", root, err)
+		}
 	}
 }

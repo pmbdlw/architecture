@@ -83,7 +83,7 @@ func TestDiscoveryAndClientCredentials(t *testing.T) {
 	}
 	var doc map[string]any
 	_ = json.NewDecoder(resp.Body).Decode(&doc)
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if doc["issuer"] != issuer || doc["jwks_uri"] != issuer+"/oauth2/jwks" {
 		t.Fatalf("discovery doc: %v", doc)
 	}

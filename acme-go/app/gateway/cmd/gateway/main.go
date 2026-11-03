@@ -35,7 +35,9 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer cfg.Close()
+	var cleanup pserver.Cleanup
+	defer cleanup.Run()
+	cleanup.Add(cfg.Close)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -43,7 +45,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer tel.Shutdown(context.Background())
+	cleanup.Add(func() error { return tel.Shutdown(context.Background()) })
 
 	keyFunc, err := auth.RemoteKeyFunc(ctx, c.Auth.JWKSURL)
 	if err != nil {
@@ -57,7 +59,7 @@ func run() error {
 		return err
 	}
 	rdb := redis.NewClient(&redis.Options{Addr: c.Data.Redis.Addr, Password: c.Data.Redis.Password, DB: c.Data.Redis.DB})
-	defer rdb.Close()
+	cleanup.Add(rdb.Close)
 
 	gw := gateway.New(ctx, c.Gateway, c.Auth.Issuer, keyFunc, discovery, rdb, tel.Logger)
 	// Nacos 中修改路由 / 灰度 / 限流后实时生效

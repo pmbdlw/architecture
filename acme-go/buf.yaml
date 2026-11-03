@@ -4,6 +4,9 @@ modules:
   - path: api
   - path: third_party
 lint:
+  # 第三方 proto（googleapis）不参与风格检查
+  ignore:
+    - third_party
   use:
     - STANDARD
   except:

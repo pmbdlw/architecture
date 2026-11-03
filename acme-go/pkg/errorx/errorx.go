@@ -67,18 +67,18 @@ func Normalize(err error) *errors.Error {
 		return se
 	}
 	var c Code
-	switch {
-	case se.Code == 400:
+	switch se.Code {
+	case 400:
 		c = BadRequest
-	case se.Code == 401:
+	case 401:
 		c = Unauthorized
-	case se.Code == 403:
+	case 403:
 		c = Forbidden
-	case se.Code == 404:
+	case 404:
 		c = NotFound
-	case se.Code == 429:
+	case 429:
 		c = TooManyRequests
-	case se.Code == 503 || se.Code == 504:
+	case 503, 504:
 		c = RemoteUnavailable
 	default:
 		c = SystemError

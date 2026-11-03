@@ -30,13 +30,15 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer cfg.Close()
+	var cleanup pserver.Cleanup
+	defer cleanup.Run()
+	cleanup.Add(cfg.Close)
 
 	tel, err := observability.Setup(context.Background(), &c.Bootstrap)
 	if err != nil {
 		return err
 	}
-	defer tel.Shutdown(context.Background())
+	cleanup.Add(func() error { return tel.Shutdown(context.Background()) })
 
 	srv, err := authserver.New(c.OAuth, tel.Logger)
 	if err != nil {

@@ -17,7 +17,7 @@ func loadKey(file string) (*rsa.PrivateKey, bool, error) {
 		key, err := rsa.GenerateKey(rand.Reader, 2048)
 		return key, true, err
 	}
-	data, err := os.ReadFile(file)
+	data, err := os.ReadFile(file) //nolint:gosec // 路径来自部署配置（K8s Secret 挂载点），不来自用户输入
 	if err != nil {
 		return nil, false, err
 	}
