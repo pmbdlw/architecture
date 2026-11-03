@@ -8,16 +8,22 @@ require (
 	github.com/ThreeDotsLabs/watermill v1.5.3
 	github.com/ThreeDotsLabs/watermill-amqp/v3 v3.1.0
 	github.com/ThreeDotsLabs/watermill-kafka/v3 v3.1.4
+	github.com/alicebob/miniredis/v2 v2.40.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-kratos/kratos/contrib/registry/nacos/v2 v2.0.0-20260404020628-f149714c1d54
 	github.com/go-kratos/kratos/v2 v2.9.2
+	github.com/go-oauth2/oauth2/v4 v4.6.0
+	github.com/go-redis/redis_rate/v10 v10.0.1
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/nacos-group/nacos-sdk-go/v2 v2.3.5
 	github.com/pressly/goose/v3 v3.29.0
 	github.com/prometheus/client_golang v1.24.1
+	github.com/redis/go-redis/v9 v9.23.0
 	github.com/shopspring/decimal v1.6.0
+	github.com/sony/gobreaker/v2 v2.4.0
 	github.com/sony/sonyflake/v2 v2.2.0
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.72.0
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.47.0
 	go.opentelemetry.io/otel/exporters/prometheus v0.69.0
@@ -71,6 +77,7 @@ require (
 	github.com/dnwe/otelsarama v0.0.0-20240308230250-9388d9d40bc0 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/eapache/go-resiliency v1.7.0 // indirect
+	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.2 // indirect
 	github.com/go-kratos/aegis v0.2.0 // indirect
@@ -119,7 +126,16 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/sethvargo/go-retry v0.5.0 // indirect
 	github.com/sony/gobreaker v1.0.0 // indirect
+	github.com/tidwall/btree v0.0.0-20191029221954-400434d76274 // indirect
+	github.com/tidwall/buntdb v1.1.2 // indirect
+	github.com/tidwall/gjson v1.12.1 // indirect
+	github.com/tidwall/grect v0.0.0-20161006141115-ba9a043346eb // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/tidwall/rtree v0.0.0-20180113144539-6cd427091e0e // indirect
+	github.com/tidwall/tinyqueue v0.0.0-20180302190814-1e39f5511563 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
+	github.com/yuin/gopher-lua v1.1.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.47.0 // indirect
 	go.opentelemetry.io/otel/log v1.47.0 // indirect

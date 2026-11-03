@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/encoding"
 	kjson "github.com/go-kratos/kratos/v2/encoding/json"
+	kerrors "github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 
 	"github.com/acme/acme-go/pkg/errorx"
@@ -47,12 +48,13 @@ func ResponseEncoder(w http.ResponseWriter, _ *http.Request, v any) error {
 	})
 }
 
-// ErrorEncoder 返回一个把任意错误规整为 Envelope 的编码器；未知错误记录 ERROR 日志并隐藏细节。
+// ErrorEncoder 返回一个把任意错误规整为 Envelope 的编码器。
+// 中间件链中的错误已由 normalizeErrors 记录；这里只记录未经中间件的未知错误（如请求绑定阶段）。
 func ErrorEncoder(logger log.Logger) func(http.ResponseWriter, *http.Request, error) {
 	helper := log.NewHelper(logger)
 	return func(w http.ResponseWriter, r *http.Request, err error) {
 		se := errorx.Normalize(err)
-		if se.Code >= 500 && se.Reason == errorx.SystemError.Reason {
+		if se.Code >= 500 && !errorx.IsBizReason(kerrors.Reason(err)) {
 			helper.Errorw("msg", "未处理异常", "path", r.URL.Path, "error", err)
 		}
 		_ = write(w, int(se.Code), Envelope{

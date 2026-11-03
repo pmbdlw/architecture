@@ -7,6 +7,8 @@ import (
 	"database/sql"
 	"fmt"
 	"io/fs"
+	stdlog "log"
+	"os"
 	"time"
 
 	"github.com/glebarez/sqlite"
@@ -54,7 +56,12 @@ func Open(c conf.Database) (*gorm.DB, error) {
 		// 唯一约束冲突统一翻译为 gorm.ErrDuplicatedKey，便于做幂等
 		TranslateError: true,
 		NowFunc:        func() time.Time { return time.Now().UTC().Truncate(time.Millisecond) },
-		Logger:         gormlogger.Default.LogMode(gormlogger.Warn),
+		// 慢 SQL（>200ms）与错误记 WARN；“记录不存在”属于正常业务结果，不记录
+		Logger: gormlogger.New(stdlog.New(os.Stdout, "", stdlog.LstdFlags), gormlogger.Config{
+			SlowThreshold:             200 * time.Millisecond,
+			LogLevel:                  gormlogger.Warn,
+			IgnoreRecordNotFoundError: true,
+		}),
 	})
 	if err != nil {
 		return nil, err

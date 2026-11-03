@@ -3,9 +3,11 @@ package server
 
 import (
 	"context"
+	"time"
 
+	"github.com/go-kratos/kratos/v2/errors"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/metadata"
 	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -37,13 +39,39 @@ func Middlewares(t *observability.Telemetry, auth middleware.Middleware) []middl
 		mws = append(mws, metrics.Server(metrics.WithRequests(requests), metrics.WithSeconds(seconds)))
 	}
 	mws = append(mws,
-		logging.Server(t.Logger),
+		accessLog(t.Logger),
 		metadata.Server(metadata.WithPropagatedPrefix(PropagatedPrefixes...)),
 	)
 	if auth != nil {
 		mws = append(mws, auth)
 	}
-	return append(mws, normalizeErrors())
+	return append(mws, normalizeErrors(t.Logger))
+}
+
+// accessLog 访问日志：成功与 4xx 业务失败记 INFO，5xx 记 ERROR（不打印堆栈，原始错误由 normalizeErrors 记录）。
+func accessLog(logger log.Logger) middleware.Middleware {
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req any) (any, error) {
+			start := time.Now()
+			reply, err := handler(ctx, req)
+			kind, operation := "", ""
+			if tr, ok := transport.FromServerContext(ctx); ok {
+				kind, operation = tr.Kind().String(), tr.Operation()
+			}
+			code, reason := int32(200), ""
+			if err != nil {
+				se := errors.FromError(err)
+				code, reason = se.Code, se.Reason
+			}
+			level := log.LevelInfo
+			if code >= 500 {
+				level = log.LevelError
+			}
+			_ = log.WithContext(ctx, logger).Log(level, "msg", "access", "kind", kind, "operation", operation,
+				"code", code, "reason", reason, "latency_ms", time.Since(start).Milliseconds())
+			return reply, err
+		}
+	}
 }
 
 // traceIDHeader 把当前链路 ID 写入响应头 X-Trace-Id。
@@ -60,15 +88,20 @@ func traceIDHeader() middleware.Middleware {
 	}
 }
 
-// normalizeErrors 把业务代码返回的错误规整为平台错误码（gRPC 调用方据此还原业务错误）。
-func normalizeErrors() middleware.Middleware {
+// normalizeErrors 把业务代码返回的错误规整为平台错误码（gRPC 调用方据此还原业务错误）；
+// 未知错误在这里以 ERROR 记录一次原始信息，对外只返回 B0001。
+func normalizeErrors(logger log.Logger) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req any) (any, error) {
 			reply, err := handler(ctx, req)
-			if err != nil {
-				return nil, errorx.Normalize(err)
+			if err == nil {
+				return reply, nil
 			}
-			return reply, nil
+			se := errorx.Normalize(err)
+			if se.Reason == errorx.SystemError.Reason && !errorx.IsBizReason(errors.Reason(err)) {
+				_ = log.WithContext(ctx, logger).Log(log.LevelError, "msg", "未处理异常", "error", err.Error())
+			}
+			return nil, se
 		}
 	}
 }

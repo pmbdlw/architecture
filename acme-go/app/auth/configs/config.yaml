@@ -1,0 +1,39 @@
+app:
+  name: acme-auth
+
+server:
+  http:
+    addr: ${HTTP_ADDR:0.0.0.0:9000}
+  management:
+    addr: ${MANAGEMENT_ADDR:0.0.0.0:7000}
+
+oauth:
+  issuer: ${AUTH_ISSUER_URI:http://127.0.0.1:9000}
+  jwk:
+    keyId: ${AUTH_JWK_KEY_ID:acme-dev}
+    # PEM 私钥由 K8s Secret 挂载，如 /etc/acme-auth/jwk/private.pem；为空时生成临时密钥（仅本地）
+    privateKeyFile: ${AUTH_JWK_PRIVATE_KEY_FILE:}
+  accessTokenTTL: 30m
+  clients:
+    # 前端 SPA / App：授权码 + PKCE，公共客户端不持有密钥
+    - id: acme-web
+      public: true
+      redirectUris:
+        - ${AUTH_WEB_REDIRECT_URI:http://localhost:3000/callback}
+      grantTypes: [authorization_code, refresh_token]
+      scopes: [openid, profile, order.read, order.write]
+    # 后台任务 / 系统集成：客户端凭证模式，密钥来自 K8s Secret
+    - id: acme-internal
+      secret: ${AUTH_INTERNAL_CLIENT_SECRET:local-only-secret}
+      grantTypes: [client_credentials]
+      scopes: [internal]
+  # 演示账号（仅 local / test 环境，生产通过 Nacos 配置置空）
+  demoUsers:
+    - uid: 1
+      username: admin
+      password: ${AUTH_DEMO_PASSWORD:password}
+      roles: [ADMIN, USER]
+    - uid: 1001
+      username: alice
+      password: ${AUTH_DEMO_PASSWORD:password}
+      roles: [USER]

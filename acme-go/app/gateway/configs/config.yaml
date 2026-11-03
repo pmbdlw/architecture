@@ -1,0 +1,42 @@
+app:
+  name: acme-gateway
+
+server:
+  http:
+    addr: ${HTTP_ADDR:0.0.0.0:8080}
+  management:
+    addr: ${MANAGEMENT_ADDR:0.0.0.0:7080}
+
+# 以下 gateway 段建议放在 Nacos 的 acme-gateway.yaml 中，修改后实时生效
+gateway:
+  routes:
+    - id: user-service
+      prefix: /api/v1/users
+      service: user-service
+    - id: order-service
+      prefix: /api/v1/orders
+      service: order-service
+    - id: notification-service
+      prefix: /api/v1/notifications
+      service: notification-service
+  publicPrefixes:
+    - /api/v1/public/
+  timeout: 10s
+  rateLimit:
+    enabled: true
+    perSecond: 20
+    burst: 40
+  breaker:
+    minRequests: 50
+    failureRatio: 0.5
+    openTimeout: 10s
+    interval: 60s
+  gray:
+    enabled: false
+    tag: v2
+    uids: []
+    percentage: 0
+    allowClientHeader: ${GRAY_ALLOW_CLIENT_HEADER:false}
+  cors:
+    allowedOrigins:
+      - ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
