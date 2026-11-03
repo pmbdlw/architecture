@@ -1,0 +1,118 @@
+# =====================================================================
+# 通用服务 Chart 默认值。每个服务、每个环境只在 deploy/gitops/envs/<env>/<service>.yaml 中覆盖差异项。
+# =====================================================================
+
+# 服务名：同时用作 Deployment/Service 名、Nacos 服务名（<名>.http / <名>.grpc）、Prometheus job 名
+appName: ""
+
+# 环境：test / staging / prod（注入 APP_ENV、NACOS_NAMESPACE）
+env: test
+
+image:
+  repository: registry.acme.com/acme-go/app
+  # CI 写入 Git 短 SHA；同一个镜像从 test 一路晋级到 prod，绝不为某个环境单独构建
+  tag: "latest"
+  # 填写后优先按 digest 拉取，防止 tag 被覆盖
+  digest: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+replicaCount: 2
+
+# 灰度版本标签：非空即为灰度 Deployment（写入 Nacos 元数据 gray-tag），例如 v2
+grayTag: ""
+
+ports:
+  http: 8080
+  # 集群内服务间调用（网关、认证中心不使用）
+  grpc: 9090
+  management: 8081
+
+service:
+  # 灰度 Release 复用稳定版的 Service，设为 false
+  enabled: true
+  type: ClusterIP
+
+# 容器资源：内存 request = limit 防止被驱逐；CPU 不设 limit（Go 1.25+ 会按 CPU limit 自动设置 GOMAXPROCS）
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    memory: 256Mi
+
+go:
+  # GOMEMLIMIT 设为内存上限的 90%，让 GC 在接近上限时更积极，避免 OOMKilled
+  memLimitPercent: 90
+
+# 平台级公共环境变量：集群内每个命名空间一个 ConfigMap，由平台团队维护（Nacos 地址、MQ 地址、OTel 端点等）
+platformConfigMap: acme-platform-env
+
+# 服务私有的敏感配置：由 ExternalSecret 从 Vault / 阿里云 KMS / AWS Secrets Manager / Azure Key Vault 同步
+secretName: ""
+
+# 额外环境变量（非敏感）
+extraEnv: {}
+
+probes:
+  startup:
+    # Go 服务启动通常 < 1s；这里主要等待数据库迁移完成
+    failureThreshold: 30
+    periodSeconds: 2
+  liveness:
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    periodSeconds: 5
+    failureThreshold: 3
+
+# 优雅下线：preStop 先等待注册中心/Ingress 摘除流量，再发送 SIGTERM
+preStopSleepSeconds: 10
+terminationGracePeriodSeconds: 60
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+# 跨可用区 + 跨节点打散
+topologySpread:
+  enabled: true
+
+serviceAccount:
+  create: true
+  # 云上身份绑定：阿里云 RRSA / AWS IRSA / Azure Workload Identity 的注解写在这里
+  annotations: {}
+
+serviceMonitor:
+  # 需要 Prometheus Operator（自建）或 ARMS Prometheus / Amazon Managed Prometheus / Azure Managed Prometheus
+  enabled: true
+  interval: 30s
+
+networkPolicy:
+  enabled: true
+  # 允许访问本服务的命名空间（除本命名空间外）
+  allowFromNamespaces:
+    - ingress-nginx
+    - monitoring
+
+ingress:
+  # 只有网关与认证中心需要开启
+  enabled: false
+  # 自建：nginx；阿里云 ACK：alb；AWS EKS：alb；Azure AKS：webapprouting.kubernetes.azure.com
+  className: nginx
+  annotations: {}
+  hosts: []
+  #  - host: api.acme.com
+  #    path: /
+  tls: []
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []

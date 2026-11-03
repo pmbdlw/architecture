@@ -1,0 +1,16 @@
+# 平台公共环境变量（方案 A：全自建）。每个环境的集群各一份，由平台团队维护，所有服务 envFrom 引用。
+# 变量名与 pkg/conf/defaults.yaml 中的占位符一一对应；账号密码一律放 Secret（见 20-external-secrets.yaml）。
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acme-platform-env
+  namespace: acme
+data:
+  NACOS_SERVER_ADDR: "nacos.middleware.svc.cluster.local:8848"
+  DB_DRIVER: "mysql"            # 或 postgres
+  MQ_DRIVER: "kafka"            # 或 rabbitmq
+  KAFKA_BROKERS: "acme-kafka-kafka-bootstrap.middleware.svc.cluster.local:9092"
+  REDIS_ADDR: "redis.middleware.svc.cluster.local:6379"
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://otel-collector.observability.svc.cluster.local:4318/v1/traces"
+  AUTH_ISSUER_URI: "https://auth.acme.com"
+  AUTH_JWK_SET_URI: "http://acme-auth.acme.svc.cluster.local/oauth2/jwks"

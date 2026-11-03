@@ -1,0 +1,79 @@
+# =====================================================================
+# acme-go 的 GitLab 流水线模板（自建方案；阿里云可用云效 Flow 实现同样的阶段）。
+# 与 Spring Cloud 版流程一致：镜像只在 main 构建一次，按 digest 从 test 晋级到 staging、prod。
+# =====================================================================
+stages: [verify, image, deploy-test, deploy-staging, deploy-prod]
+
+variables:
+  GOPATH: $CI_PROJECT_DIR/.go
+  REGISTRY: registry.acme.com/acme-go
+  GITOPS_DIR: acme-go/deploy/gitops/envs
+
+default:
+  cache:
+    key: go-mod
+    paths: [.go/pkg/mod]
+
+# 1. 格式、静态检查、契约兼容性、测试（含竞态检测）
+verify:
+  stage: verify
+  image: golang:1.26
+  script:
+    - cd acme-go
+    - make init
+    - test -z "$(gofmt -l .)"
+    - make lint
+    - make test
+    # 生成代码必须与 proto 同步
+    - make api && git diff --exit-code api/
+
+# 2. 构建镜像 + 漏洞扫描 + 推送（只在 main 分支）
+.image:
+  stage: image
+  image: docker:28
+  services: [docker:28-dind]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - cd acme-go
+    - docker build -f deploy/docker/Dockerfile --build-arg APP=$APP -t $REGISTRY/$SERVICE:$CI_COMMIT_SHORT_SHA .
+    - trivy image --exit-code 1 --severity CRITICAL $REGISTRY/$SERVICE:$CI_COMMIT_SHORT_SHA
+    - docker push $REGISTRY/$SERVICE:$CI_COMMIT_SHORT_SHA
+    - docker inspect --format='{{index .RepoDigests 0}}' $REGISTRY/$SERVICE:$CI_COMMIT_SHORT_SHA | cut -d@ -f2 > digest-$SERVICE.txt
+  artifacts:
+    paths: [acme-go/digest-*.txt]
+
+image:order-service:
+  extends: .image
+  variables: { SERVICE: order-service, APP: order }
+# user-service / notification-service / acme-gateway(APP=gateway) / acme-auth(APP=auth) 同理
+
+# 3~5. 更新 GitOps 中的镜像版本：test 自动同步，staging / prod 人工晋级（同一镜像）
+deploy-test:
+  stage: deploy-test
+  image: mikefarah/yq:4
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - for f in $GITOPS_DIR/test/*.yaml; do yq -i ".image.tag = \"$CI_COMMIT_SHORT_SHA\"" $f; done
+    - git commit -am "deploy-go(test): $CI_COMMIT_SHORT_SHA" && git push origin HEAD:main
+
+deploy-staging:
+  stage: deploy-staging
+  when: manual
+  image: mikefarah/yq:4
+  script:
+    - for f in $GITOPS_DIR/staging/*.yaml; do yq -i ".image.tag = \"$CI_COMMIT_SHORT_SHA\"" $f; done
+    - git commit -am "deploy-go(staging): $CI_COMMIT_SHORT_SHA" && git push origin HEAD:main
+
+deploy-prod:
+  stage: deploy-prod
+  when: manual
+  environment: production
+  image: mikefarah/yq:4
+  script:
+    - for f in $GITOPS_DIR/prod/*.yaml; do
+        svc=$(yq '.appName' $f);
+        yq -i ".image.tag = \"$CI_COMMIT_SHORT_SHA\" | .image.digest = \"$(cat acme-go/digest-$svc.txt)\"" $f;
+      done
+    - git commit -am "deploy-go(prod): $CI_COMMIT_SHORT_SHA" && git push origin HEAD:main

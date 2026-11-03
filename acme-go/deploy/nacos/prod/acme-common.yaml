@@ -1,0 +1,10 @@
+# Nacos 命名空间：prod    Data ID：acme-common.yaml    Group：DEFAULT_GROUP
+# 所有 Go 服务共享的配置，覆盖 pkg/conf/defaults.yaml。不允许出现密码、密钥等敏感信息。
+observability:
+  log:
+    level: info
+  tracing:
+    sampling: 0.1
+
+client:
+  timeout: 3s

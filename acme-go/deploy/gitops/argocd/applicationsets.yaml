@@ -1,0 +1,114 @@
+# Argo CD ApplicationSet：envs/<env>/<service>.yaml 每个文件生成一个 Application（与 Spring Cloud 版流程一致）。
+# test、staging 自动同步；prod 只生成 Application，由发布负责人在 Argo CD 中手动 Sync。
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: acme-go-test
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://git.acme.com/platform/acme.git
+        revision: main
+        files:
+          - path: acme-go/deploy/gitops/envs/test/*.yaml
+  template:
+    metadata:
+      name: "go-test-{{ .path.filenameNormalized | trimSuffix \".yaml\" }}"
+      labels:
+        acme.com/env: test
+    spec:
+      project: acme-test
+      source:
+        repoURL: https://git.acme.com/platform/acme.git
+        targetRevision: main
+        path: acme-go/deploy/helm/acme-service
+        helm:
+          valueFiles:
+            - "/{{ .path.path }}/{{ .path.filename }}"
+      destination:
+        name: acme-test
+        namespace: acme
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - ServerSideApply=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: acme-go-staging
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://git.acme.com/platform/acme.git
+        revision: main
+        files:
+          - path: acme-go/deploy/gitops/envs/staging/*.yaml
+  template:
+    metadata:
+      name: "go-staging-{{ .path.filenameNormalized | trimSuffix \".yaml\" }}"
+      labels:
+        acme.com/env: staging
+    spec:
+      project: acme-staging
+      source:
+        repoURL: https://git.acme.com/platform/acme.git
+        targetRevision: main
+        path: acme-go/deploy/helm/acme-service
+        helm:
+          valueFiles:
+            - "/{{ .path.path }}/{{ .path.filename }}"
+      destination:
+        name: acme-staging
+        namespace: acme
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - ServerSideApply=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: acme-go-prod
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://git.acme.com/platform/acme.git
+        revision: main
+        files:
+          - path: acme-go/deploy/gitops/envs/prod/*.yaml
+  template:
+    metadata:
+      name: "go-prod-{{ .path.filenameNormalized | trimSuffix \".yaml\" }}"
+      labels:
+        acme.com/env: prod
+    spec:
+      project: acme-prod
+      source:
+        repoURL: https://git.acme.com/platform/acme.git
+        targetRevision: main
+        path: acme-go/deploy/helm/acme-service
+        helm:
+          valueFiles:
+            - "/{{ .path.path }}/{{ .path.filename }}"
+      destination:
+        name: acme-prod
+        namespace: acme
+      syncPolicy:
+        # 生产不自动同步：合并到 main 后由发布负责人在 Argo CD 中确认 Diff 再 Sync
+        syncOptions:
+          - ServerSideApply=true

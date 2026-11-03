@@ -1,0 +1,24 @@
+# golangci-lint v2 配置：团队统一的静态检查规则（make lint）
+version: "2"
+linters:
+  enable:
+    - bodyclose
+    - errorlint
+    - gosec
+    - misspell
+    - nilerr
+    - revive
+    - sqlclosecheck
+    - unconvert
+  settings:
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+  exclusions:
+    paths:
+      - api/
+formatters:
+  enable:
+    - gofmt
+    - goimports

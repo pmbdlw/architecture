@@ -1,0 +1,32 @@
+# Nacos 命名空间：staging    Data ID：acme-gateway.yaml
+# 网关动态配置：修改后网关通过 config.Watch("gateway") 实时生效，无需重启。
+gateway:
+  routes:
+    - id: user-service
+      prefix: /api/v1/users
+      service: user-service
+    - id: order-service
+      prefix: /api/v1/orders
+      service: order-service
+    - id: notification-service
+      prefix: /api/v1/notifications
+      service: notification-service
+  publicPrefixes: [/api/v1/public/]
+  timeout: 10s
+  rateLimit:
+    enabled: true
+    perSecond: 20
+    burst: 40
+  breaker:
+    minRequests: 50
+    failureRatio: 0.5
+    openTimeout: 10s
+    interval: 60s
+  gray:
+    enabled: false
+    tag: v2
+    uids: ["1", "1001"]
+    percentage: 5
+    allowClientHeader: false
+  cors:
+    allowedOrigins: ["https://www.acme.com"]

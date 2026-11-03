@@ -1,0 +1,15 @@
+# 平台公共环境变量（方案 B：阿里云）。各地址均为云产品的 VPC 内网接入点（示例值）。
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acme-platform-env
+  namespace: acme
+data:
+  NACOS_SERVER_ADDR: "mse-xxxxxxxx-nacos-ans.mse.aliyuncs.com:8848"
+  DB_DRIVER: "mysql"            # RDS MySQL / PolarDB MySQL；PostgreSQL 版填 postgres
+  MQ_DRIVER: "kafka"            # 云消息队列 Kafka 版；RabbitMQ 版填 rabbitmq 并在 Secret 中提供 RABBITMQ_URL
+  KAFKA_BROKERS: "alikafka-post-cn-xxxx-1-vpc.alikafka.aliyuncs.com:9092,alikafka-post-cn-xxxx-2-vpc.alikafka.aliyuncs.com:9092"
+  REDIS_ADDR: "r-xxxxxxxx.redis.rds.aliyuncs.com:6379"
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://tracing-analysis-dc-hz-internal.aliyuncs.com/adapt_xxxx/api/otlp/traces"
+  AUTH_ISSUER_URI: "https://auth.acme.com"
+  AUTH_JWK_SET_URI: "http://acme-auth.acme.svc.cluster.local/oauth2/jwks"

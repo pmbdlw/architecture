@@ -1,14 +1,14 @@
-name: acme-cloud CI
+name: CI
 
 on:
   push:
     branches: [main, "claude/**"]
-    paths: ["acme-cloud/**", ".github/workflows/ci.yml"]
+    paths: ["acme-cloud/**", "acme-go/**", ".github/workflows/ci.yml"]
   pull_request:
-    paths: ["acme-cloud/**", ".github/workflows/ci.yml"]
+    paths: ["acme-cloud/**", "acme-go/**", ".github/workflows/ci.yml"]
 
 jobs:
-  build:
+  spring-cloud:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -24,6 +24,33 @@ jobs:
         run: mvn -B -ntp verify
       - name: 编译校验（RabbitMQ Binder）
         run: mvn -B -ntp -Prabbit -DskipTests package
+      - uses: azure/setup-helm@v4
+      - name: Helm 模板校验
+        run: |
+          for f in deploy/gitops/envs/*/*.yaml; do
+            helm template check deploy/helm/acme-service -f "$f" > /dev/null
+          done
+          helm lint deploy/helm/acme-service --set appName=lint
+
+  go:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: acme-go
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: acme-go/go.mod
+          cache-dependency-path: acme-go/go.sum
+      - name: 格式检查
+        run: test -z "$(gofmt -l .)"
+      - name: 静态检查
+        run: go vet ./...
+      - name: 测试（含竞态检测）
+        run: go test -race -count=1 ./...
+      - name: 构建全部服务
+        run: make build
       - uses: azure/setup-helm@v4
       - name: Helm 模板校验
         run: |
