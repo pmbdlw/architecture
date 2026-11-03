@@ -1,0 +1,14 @@
+# 服务契约（相当于 Java 版的 xxx-api 模块）：api/ 下的 proto 文件
+version: v2
+modules:
+  - path: api
+  - path: third_party
+lint:
+  use:
+    - STANDARD
+  except:
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    - RPC_RESPONSE_STANDARD_NAME
+breaking:
+  use:
+    - FILE

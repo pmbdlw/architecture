@@ -1,0 +1,75 @@
+# =====================================================================
+# 平台默认配置（优先级最低）。服务的 configs/config.yaml、Nacos、环境变量都可以覆盖。
+# 环境差异一律通过环境变量 + Nacos 命名空间表达，镜像本身与环境无关。
+# =====================================================================
+app:
+  env: ${APP_ENV:local}
+  version: ${APP_VERSION:dev}
+  grayTag: ${GRAY_TAG:}
+  zone: ${APP_ZONE:}
+
+server:
+  http:
+    addr: ${HTTP_ADDR:0.0.0.0:8080}
+    timeout: 10s
+  grpc:
+    addr: ${GRPC_ADDR:0.0.0.0:9090}
+    timeout: 10s
+  management:
+    # 探针与指标端口，与业务端口分离：Ingress / 网关只暴露 HTTP 端口
+    addr: ${MANAGEMENT_ADDR:0.0.0.0:8081}
+  stopTimeout: 30s
+
+nacos:
+  enabled: ${NACOS_ENABLED:true}
+  addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+  # 命名空间 = 环境：test / staging / prod；本地开发为空（public）
+  namespace: ${NACOS_NAMESPACE:}
+  group: ${NACOS_GROUP:DEFAULT_GROUP}
+  username: ${NACOS_USERNAME:nacos}
+  password: ${NACOS_PASSWORD:nacos}
+
+observability:
+  log:
+    # K8s 中通过 LOG_FORMAT=json 输出结构化日志
+    format: ${LOG_FORMAT:text}
+    level: ${LOG_LEVEL:info}
+  tracing:
+    enabled: ${TRACING_ENABLED:true}
+    # 自建：OTel Collector；阿里云：ARMS OTLP 接入点
+    endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+    sampling: ${TRACING_SAMPLING_PROBABILITY:1.0}
+
+auth:
+  issuer: ${AUTH_ISSUER_URI:http://127.0.0.1:9000}
+  jwksUrl: ${AUTH_JWK_SET_URI:http://127.0.0.1:9000/oauth2/jwks}
+
+data:
+  database:
+    driver: ${DB_DRIVER:mysql}
+    dsn: ${DB_DSN:}
+    maxOpenConns: ${DB_POOL_MAX_SIZE:20}
+    maxIdleConns: ${DB_POOL_MIN_IDLE:5}
+    # 小于数据库 / 代理（ProxySQL、RDS Proxy、PgBouncer）的空闲断开时间
+    connMaxLifetime: 25m
+    migrate: ${DB_MIGRATE:true}
+  redis:
+    addr: ${REDIS_ADDR:127.0.0.1:6379}
+    password: ${REDIS_PASSWORD:}
+    db: 0
+
+mq:
+  driver: ${MQ_DRIVER:kafka}
+  kafka:
+    brokers: ${KAFKA_BROKERS:127.0.0.1:9092}
+  rabbitmq:
+    url: ${RABBITMQ_URL:amqp://guest:guest@127.0.0.1:5672/}
+  outbox:
+    pollInterval: 1s
+    batchSize: 100
+    maxRetries: 10
+    lockClause: FOR UPDATE SKIP LOCKED
+
+client:
+  # 服务间调用默认超时；按下游单独调整写在服务自己的配置里
+  timeout: 3s

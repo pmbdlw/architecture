@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package order.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/acme/acme-go/api/order/v1;orderv1";
+
+// OrderService 对外接口：经网关路由 /api/v1/orders/**。当前用户取自 JWT 的 uid。
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (OrderReply) {
+    option (google.api.http) = {
+      post: "/api/v1/orders"
+      body: "*"
+    };
+  }
+  rpc GetOrder(GetOrderRequest) returns (OrderReply) {
+    option (google.api.http) = {get: "/api/v1/orders/{id}"};
+  }
+}
+
+message CreateOrderRequest {
+  string product_code = 1;
+  int32 quantity = 2;
+  // 金额（元），以字符串传递避免浮点误差，如 "99.80"
+  string amount = 3;
+}
+
+message GetOrderRequest {
+  int64 id = 1;
+}
+
+message OrderReply {
+  int64 id = 1;
+  string order_no = 2;
+  string product_code = 3;
+  int32 quantity = 4;
+  string amount = 5;
+  // CREATED / PAID / CANCELLED
+  string status = 6;
+  google.protobuf.Timestamp created_at = 7;
+}

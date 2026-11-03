@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package order.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/acme/acme-go/api/order/v1;orderv1";
+
+// OrderCreated 订单已创建事件（v1），以 protojson 编码为消息体。
+// 只能追加字段，消费方需容忍未知字段；不兼容的修改必须发布新的事件类型。
+message OrderCreated {
+  int64 order_id = 1;
+  string order_no = 2;
+  int64 user_id = 3;
+  string product_code = 4;
+  int32 quantity = 5;
+  string amount = 6;
+  google.protobuf.Timestamp created_at = 7;
+}

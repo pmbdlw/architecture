@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "github.com/acme/acme-go/api/user/v1;userv1";
+
+// UserService 对外接口：经网关路由 /api/v1/users/**。
+service UserService {
+  // 注册用户（管理员）
+  rpc RegisterUser(RegisterUserRequest) returns (UserReply) {
+    option (google.api.http) = {
+      post: "/api/v1/users"
+      body: "*"
+    };
+  }
+  // 查询用户（手机号脱敏）
+  rpc GetUser(GetUserRequest) returns (UserReply) {
+    option (google.api.http) = {get: "/api/v1/users/{id}"};
+  }
+}
+
+// UserInternal 集群内接口：只注册在 gRPC 服务器上，网关不会转发。
+// 只允许向后兼容地修改：可以新增字段与方法，不能删除或改变字段编号。
+service UserInternalService {
+  rpc GetUser(GetUserRequest) returns (UserInfo);
+}
+
+message RegisterUserRequest {
+  string username = 1;
+  string mobile = 2;
+  string email = 3;
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message UserReply {
+  int64 id = 1;
+  string username = 2;
+  // 脱敏后的手机号，如 138****1234
+  string mobile = 3;
+  string email = 4;
+  // ACTIVE / DISABLED
+  string status = 5;
+}
+
+// UserInfo 服务间传输的用户信息（不含敏感字段）。
+message UserInfo {
+  int64 id = 1;
+  string username = 2;
+  string status = 3;
+}

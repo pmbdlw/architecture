@@ -1,0 +1,19 @@
+app:
+  name: notification-service
+
+server:
+  http:
+    addr: ${HTTP_ADDR:0.0.0.0:8103}
+  grpc:
+    addr: ${GRPC_ADDR:0.0.0.0:9103}
+  management:
+    addr: ${MANAGEMENT_ADDR:0.0.0.0:7103}
+
+data:
+  database:
+    dsn: ${DB_DSN:root:root@tcp(127.0.0.1:3306)/acme_notification?parseTime=true&loc=UTC&charset=utf8mb4}
+
+# 消费组 = 服务名（Kafka consumer group / RabbitMQ 队列 acme.order.events_notification-service）
+consumer:
+  retries: 3
+  initialInterval: 1s

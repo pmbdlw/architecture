@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package notification.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/acme/acme-go/api/notification/v1;notificationv1";
+
+// NotificationService 对外接口：经网关路由 /api/v1/notifications/**。
+service NotificationService {
+  // 分页查询我的通知（pageNo 从 1 开始，pageSize ≤ 100）
+  rpc ListMyNotifications(ListMyNotificationsRequest) returns (ListMyNotificationsReply) {
+    option (google.api.http) = {get: "/api/v1/notifications"};
+  }
+}
+
+message ListMyNotificationsRequest {
+  int64 page_no = 1;
+  int64 page_size = 2;
+}
+
+message Notification {
+  int64 id = 1;
+  // SITE / SMS / EMAIL
+  string channel = 2;
+  string title = 3;
+  string content = 4;
+  string biz_key = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message ListMyNotificationsReply {
+  int64 total = 1;
+  int64 page_no = 2;
+  int64 page_size = 3;
+  repeated Notification records = 4;
+}

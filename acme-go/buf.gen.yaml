@@ -1,0 +1,14 @@
+# 生成代码与 proto 放在同一目录（Kratos 约定），生成结果提交到仓库，调用方无需安装 protoc
+version: v2
+plugins:
+  - local: protoc-gen-go
+    out: api
+    opt: paths=source_relative
+  - local: protoc-gen-go-grpc
+    out: api
+    opt: paths=source_relative
+  - local: protoc-gen-go-http
+    out: api
+    opt: paths=source_relative
+inputs:
+  - directory: api

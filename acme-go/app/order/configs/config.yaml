@@ -1,0 +1,19 @@
+app:
+  name: order-service
+
+server:
+  http:
+    addr: ${HTTP_ADDR:0.0.0.0:8102}
+  grpc:
+    addr: ${GRPC_ADDR:0.0.0.0:9102}
+  management:
+    addr: ${MANAGEMENT_ADDR:0.0.0.0:7102}
+
+data:
+  database:
+    dsn: ${DB_DSN:root:root@tcp(127.0.0.1:3306)/acme_order?parseTime=true&loc=UTC&charset=utf8mb4}
+
+client:
+  # 本地未启用 Nacos 时直连；K8s 中通过 Nacos 发现 user-service.grpc
+  endpoints:
+    user-service: ${USER_SERVICE_GRPC:127.0.0.1:9101}
