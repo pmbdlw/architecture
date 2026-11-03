@@ -3,6 +3,34 @@ from svgkit import Svg, C
 
 W = 1440
 
+# 不同技术栈下的组件标注（拓扑相同）
+LABELS = {
+    "spring": {
+        "gateway": ["Spring Cloud Gateway · JWT 校验 · Redis 限流 · 熔断 · 灰度打标"],
+        "auth": ["Spring Authorization Server · OAuth2.1 / OIDC · 签发 JWT"],
+        "services": [("user-service ×3", "MVC · MyBatis-Plus"), ("order-service ×3", "Feign · Stream(Outbox)"),
+                     ("notification-service ×2", "Stream 消费 · 幂等"), ("…其它领域服务", "同一套 starter")],
+        "lb": "lb://服务名（灰度 LB）",
+        "rpc": "OpenFeign（内部 /internal/**）",
+        "stream": "Stream 发布/订阅",
+        "nacos": ["注册中心 + 配置中心", "命名空间 = 环境 · 外置 MySQL 存储"],
+        "title_suffix": "",
+        "artifact": ("Nexus", "Maven 私服"),
+    },
+    "go": {
+        "gateway": ["Go 网关 · ReverseProxy · JWT · Redis 限流 · 熔断 · 灰度"],
+        "auth": ["OAuth 2.1 / OIDC · 签发 JWT（或 Casdoor / Keycloak）"],
+        "services": [("user-service ×3", "Kratos · GORM"), ("order-service ×3", "gRPC · Watermill(Outbox)"),
+                     ("notification-service ×2", "Watermill 消费 · 幂等"), ("…其它领域服务", "同一套 pkg")],
+        "lb": "Nacos 发现 + 灰度选择",
+        "rpc": "gRPC（UserInternalService）",
+        "stream": "Watermill 发布/订阅",
+        "nacos": ["注册中心（<服务>.http / .grpc）+ 配置中心", "命名空间 = 环境 · 外置 MySQL 存储"],
+        "title_suffix": "（Go 技术栈）",
+        "artifact": ("Athens / Nexus", "Go 模块代理"),
+    },
+}
+
 
 def _users(s):
     s.group(430, 112, 580, 82, "用户端", kind="user", dash=None)
@@ -10,28 +38,26 @@ def _users(s):
         s.box(450 + i * 186, 128, 170, 54, t, [ln], kind="user", icon="user")
 
 
-def _business_namespace(s, x, y, w, extra_note):
+def _business_namespace(s, x, y, w, extra_note, L):
     s.group(x, y, w, 250, "命名空间 acme（业务）", kind="svc", sub="Pod IP 注册到 Nacos，服务间直连 Pod")
-    s.box(x + 20, y + 24, 440, 66, "acme-gateway ×3", ["Spring Cloud Gateway · JWT 校验 · Redis 限流 · 熔断 · 灰度打标"],
-          kind="cloud", icon="lb")
-    s.box(x + w - 460, y + 24, 440, 66, "acme-auth ×2", ["Spring Authorization Server · OAuth2.1 / OIDC · 签发 JWT"],
-          kind="cloud", icon="lock")
-    names = [("user-service ×3", "MVC · MyBatis-Plus"), ("order-service ×3", "Feign · Stream(Outbox)"),
-             ("notification-service ×2", "Stream 消费 · 幂等"), ("…其它领域服务", "同一套 starter")]
+    s.box(x + 20, y + 24, 440, 66, "acme-gateway ×3", L["gateway"], kind="cloud", icon="lb")
+    s.box(x + w - 460, y + 24, 440, 66, "acme-auth ×2", L["auth"], kind="cloud", icon="lock")
+    names = L["services"]
     bw = (w - 40 - 3 * 12) / 4
     for i, (t, ln) in enumerate(names):
         s.box(x + 20 + i * (bw + 12), y + 120, bw, 62, t, [ln], kind="svc", title_size=14.5)
-    s.arrow([(x + 240, y + 90), (x + 240, y + 120)], color=C["cloud"][0], label="lb://服务名（灰度 LB）",
+    s.arrow([(x + 240, y + 90), (x + 240, y + 120)], color=C["cloud"][0], label=L["lb"],
             label_pos=(x + 345, y + 105))
     s.arrow([(x + 20 + bw + 12 + bw / 2, y + 182), (x + 20 + bw + 12 + bw / 2, y + 200),
              (x + 20 + bw / 2, y + 200), (x + 20 + bw / 2, y + 184)], color=C["svc"][0], dash="5 3")
-    s.note(x + 20 + bw + 6, y + 213, "OpenFeign（内部 /internal/**）", size=12, fill=C["svc"][2], anchor="middle")
+    s.note(x + 20 + bw + 6, y + 213, L["rpc"], size=12, fill=C["svc"][2], anchor="middle")
     s.note(x + 20, y + 236, extra_note, size=12.5, fill="#334155")
 
 
-def selfhosted():
-    s = Svg(W, 1080, "方案A 全自建生产环境运行架构")
-    s.title_block("方案 A：全自建（IDC / 私有云）— 生产环境运行架构",
+def selfhosted(stack="spring"):
+    L = LABELS[stack]
+    s = Svg(W, 1080, "方案A 全自建生产环境运行架构" + L["title_suffix"])
+    s.title_block("方案 A：全自建（IDC / 私有云）— 生产环境运行架构" + L["title_suffix"],
                   "测试、预发布环境使用同一套拓扑的缩小版（见“环境规划”）；所有组件均为开源或自有软件")
     s.legend(870, 34, [("access", "接入"), ("cloud", "Spring Cloud 基础设施"), ("svc", "业务服务")])
     s.legend(870, 62, [("data", "数据"), ("mq", "消息/缓存"), ("obs", "可观测"), ("ops", "研发运维")])
@@ -59,7 +85,7 @@ def selfhosted():
           kind="access", title_size=14)
     s.arrow([(280, 436), (280, 482)], color=C["access"][0])
     s.arrow([(760, 436), (760, 482)], color=C["access"][0])
-    _business_namespace(s, 40, 460, 950, "每个服务：Deployment + HPA + PDB + NetworkPolicy · 跨节点打散 · 镜像按 digest 部署 · 探针走 8081 管理端口")
+    _business_namespace(s, 40, 460, 950, "每个服务：Deployment + HPA + PDB + NetworkPolicy · 跨节点打散 · 镜像按 digest 部署 · 探针走 8081 管理端口", L)
 
     s.group(40, 738, 460, 168, "命名空间 middleware（专用节点池 · 本地 SSD）", kind="mq", label_size=13.5)
     s.box(56, 762, 428, 62, "Kafka 3 Broker（Strimzi · KRaft）", ["或 RabbitMQ 3 节点（Cluster Operator · 仲裁队列）"],
@@ -73,7 +99,7 @@ def selfhosted():
         cx, cy = 536 + (i % 3) * 150, 762 + (i // 3) * 72
         s.box(cx, cy, 142, 62, t, [ln], kind="obs", title_size=13, line_size=12)
 
-    s.arrow([(455, 710), (455, 762)], color=C["mq"][0], label="Stream 发布/订阅", label_pos=(455, 724))
+    s.arrow([(455, 710), (455, 762)], color=C["mq"][0], label=L["stream"], label_pos=(455, 724))
 
     # K8s 外部：数据与注册配置
     s.group(1030, 362, 390, 562, "K8s 外：有状态核心（物理机 / 虚机）", kind="data", label_size=14)
@@ -82,8 +108,7 @@ def selfhosted():
     s.note(1225, 488, "— 或 —", anchor="middle", size=12.5, fill=C["data"][2])
     s.box(1048, 502, 354, 70, "PostgreSQL 17 + Patroni", ["1 主 2 从 · etcd 选主 · PgBouncer 连接池"], kind="data",
           icon="db")
-    s.box(1048, 592, 354, 82, "Nacos 3.x 集群 ×3", ["注册中心 + 配置中心", "命名空间 = 环境 · 外置 MySQL 存储"], kind="cloud",
-          icon="compass")
+    s.box(1048, 592, 354, 82, "Nacos 3.x 集群 ×3", L["nacos"], kind="cloud", icon="compass")
     s.box(1048, 694, 354, 62, "MinIO · Elasticsearch", ["对象存储 · 全文检索"], kind="data", icon="box")
     s.box(1048, 776, 354, 70, "备份与容灾", ["XtraBackup / pgBackRest → 异地机房", "Velero 备份集群资源 · 定期恢复演练"],
           kind="ops", icon="doc")
@@ -98,7 +123,7 @@ def selfhosted():
     # 研发运维
     s.group(20, 958, 1400, 106, "研发与运维支撑（独立管理集群 / 虚机，所有环境共用）", kind="ops")
     ops = [("GitLab + Runner", "代码 · CI", "git"), ("Harbor", "镜像 · Trivy 扫描", "box"),
-           ("Nexus", "Maven 私服", "box"), ("SonarQube", "质量门禁", "chart"), ("Argo CD", "GitOps 部署", "k8s"),
+           L["artifact"] + ("box",), ("SonarQube", "质量门禁", "chart"), ("Argo CD", "GitOps 部署", "k8s"),
            ("Vault", "密钥 · 动态凭证", "lock"), ("Keycloak / LDAP", "员工 SSO", "user"),
            ("JumpServer", "堡垒机 · 审计", "shield")]
     bw = (1400 - 40 - 7 * 10) / 8
@@ -107,9 +132,10 @@ def selfhosted():
     return s
 
 
-def aliyun():
-    s = Svg(W, 1080, "方案B 阿里云生产环境运行架构")
-    s.title_block("方案 B：阿里云 — 生产环境运行架构",
+def aliyun(stack="spring"):
+    L = LABELS[stack]
+    s = Svg(W, 1080, "方案B 阿里云生产环境运行架构" + L["title_suffix"])
+    s.title_block("方案 B：阿里云 — 生产环境运行架构" + L["title_suffix"],
                   "有状态组件全部使用云产品（多可用区高可用），K8s 只运行无状态服务；测试/预发布为同构的独立账号与 VPC")
     s.legend(870, 34, [("aliyun", "阿里云产品"), ("cloud", "Spring Cloud 基础设施"), ("svc", "业务服务")])
     s.legend(870, 62, [("data", "数据"), ("mq", "消息/缓存"), ("obs", "可观测"), ("ops", "研发治理")])
@@ -135,7 +161,7 @@ def aliyun():
           kind="aliyun", title_size=14)
     s.arrow([(280, 436), (280, 482)], color=C["aliyun"][0])
     s.arrow([(760, 436), (760, 482)], color=C["aliyun"][0])
-    _business_namespace(s, 40, 460, 950, "Pod 通过 RRSA 获取 RAM 角色访问云产品（免 AccessKey） · Terway 网络 · 安全组 + NetworkPolicy")
+    _business_namespace(s, 40, 460, 950, "Pod 通过 RRSA 获取 RAM 角色访问云产品（免 AccessKey） · Terway 网络 · 安全组 + NetworkPolicy", L)
 
     s.group(40, 738, 460, 168, "集群组件（ACK 应用市场 / 组件中心）", kind="k8s", label_size=13.5)
     comps = [("ARMS 探针 / Prometheus", "指标 · 链路采集"), ("LoongCollector", "日志采集 → SLS"),

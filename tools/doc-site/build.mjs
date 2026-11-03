@@ -1,6 +1,7 @@
-// 生成 HTML 版文档：node build.mjs
-//   输出 html/index.html（完整、可离线打开的单文件）。
-//   --fragment <path> 另外输出不含 <html>/<head>/<body> 外壳的版本（用于发布为 claude.ai Artifact）。
+// 生成 HTML 版文档：node build.mjs --edition spring|go
+//   spring → html/index.html（Spring Cloud 版），go → html/go.html（Go 版）；均为完整、可离线打开的单文件。
+//   --fragment <path> 另外输出不含 <html>/<head>/<body> 外壳的版本（用于发布为 claude.ai Artifact），
+//   此时用环境变量 OTHER_EDITION_URL 指定另一个版本的页面地址。
 // 处理内容：Markdown → HTML、内联 SVG 架构图、Chromium 预渲染 Mermaid、highlight.js 预高亮代码。
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,18 +12,66 @@ import { chromium } from 'playwright';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
-const docsDir = path.join(root, 'docs');
-const outFile = path.join(root, 'html', 'index.html');
+const arg = (name) => {
+  const i = process.argv.indexOf(name);
+  return i > 0 ? process.argv[i + 1] : undefined;
+};
 // 文档中指向工程代码的链接统一转到 GitHub
 const REPO_URL = process.env.REPO_URL ?? 'https://github.com/pmbdlw/architecture';
 const REPO_REF = process.env.REPO_REF ?? 'claude/brave-bohr-ncvazk';
 
-const CHAPTERS = [
-  '01-runtime-architecture.md',
-  '02-spring-cloud-in-practice.md',
-  '03-team-conventions.md',
-  '04-code-structure.md',
-];
+const EDITIONS = {
+  spring: {
+    docs: 'docs',
+    out: 'html/index.html',
+    code: 'acme-cloud',
+    chapters: ['01-runtime-architecture.md', '02-spring-cloud-in-practice.md', '03-team-conventions.md',
+      '04-code-structure.md'],
+    title: 'Spring Cloud 微服务架构说明',
+    description: 'Spring Cloud + Kubernetes 中大型微服务系统架构说明：环境规划、全自建与阿里云方案、Spring Cloud 技术落地、团队规范与初始代码结构',
+    heading: 'Spring Cloud 中大型微服务系统架构说明',
+    eyebrow: '架构说明 · acme-cloud · 2026 年 10 月',
+    lead: `运行在 Kubernetes 上的微服务参考架构：数据库 MySQL / PostgreSQL 二选一，消息 Kafka / RabbitMQ 二选一，
+  覆盖测试、预发布、生产三套环境，给出全自建与阿里云两种落地方案，并附可直接编译运行的初始工程。`,
+    stack: [['Java', '21'], ['Spring Boot', '4.0.9'], ['Spring Cloud', '2025.1.4'], ['Spring Cloud Alibaba', '2025.1.0.0'],
+      ['Nacos', '3.1'], ['K8s', '1.32+']],
+    cards: [['运行架构', '环境规划 · 全自建 · 阿里云 · AWS / Azure · 发布与灰度'],
+      ['Spring Cloud 技术落地', 'Nacos · Gateway · Feign · 熔断 · Stream · 认证 · 可观测'],
+      ['团队开发规范', '命名 · 分层 · API · 数据库 · 消息 · 安全 · 测试 · 评审'],
+      ['初始代码结构', '模块全景 · 目录树 · 关键代码 · 本地开发 · 新增服务']],
+    other: { key: 'go', label: 'Go 版', file: 'go.html', docs: 'docs-go' },
+    label: 'Spring Cloud 版',
+  },
+  go: {
+    docs: 'docs-go',
+    out: 'html/go.html',
+    code: 'acme-go',
+    chapters: ['01-runtime-architecture.md', '02-go-stack-in-practice.md', '03-team-conventions.md',
+      '04-code-structure.md'],
+    title: 'Go 微服务架构说明',
+    description: 'Go + Kubernetes 中大型微服务系统架构说明：环境规划、全自建与阿里云方案、Go 技术栈落地、团队规范与初始代码结构',
+    heading: 'Go 中大型微服务系统架构说明',
+    eyebrow: '架构说明 · acme-go · 2026 年 11 月',
+    lead: `与 Spring Cloud 版相同的架构设计，用 Go 技术栈实现：Kratos + gRPC + Nacos，数据库 MySQL / PostgreSQL 二选一，
+  消息 Kafka / RabbitMQ 二选一，覆盖测试、预发布、生产三套环境与全自建、阿里云两种方案，并附可直接编译运行的初始工程。`,
+    stack: [['Go', '1.26'], ['Kratos', '2.9.2'], ['gRPC', '1.84'], ['nacos-sdk-go', '2.3.5'], ['Watermill', '1.5'],
+      ['GORM', '1.31'], ['K8s', '1.32+']],
+    cards: [['运行架构', '环境规划 · 全自建 · 阿里云 · AWS / Azure · Go 运行差异'],
+      ['Go 技术栈落地', 'Kratos · Nacos · 网关 · gRPC · 熔断 · Watermill · 认证 · 可观测'],
+      ['团队开发规范', '工程布局 · 分层 · Protobuf · 编码 · 并发 · 数据库 · 测试'],
+      ['初始代码结构', '模块全景 · 目录树 · 关键代码 · 本地开发 · 新增服务']],
+    other: { key: 'spring', label: 'Spring Cloud 版', file: 'index.html', docs: 'docs' },
+    label: 'Go 版',
+  },
+};
+const editionKey = arg('--edition') ?? 'spring';
+const E = EDITIONS[editionKey];
+if (!E) throw new Error(`unknown edition ${editionKey}`);
+const docsDir = path.join(root, E.docs);
+const outFile = path.join(root, E.out);
+const CHAPTERS = E.chapters;
+// 指向另一版本的链接先写成占位符，完整页面与发布片段分别替换
+const OTHER = '__OTHER_EDITION__';
 
 const FONT_STACK = "'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei','WenQuanYi Zen Hei',sans-serif";
 
@@ -61,6 +110,9 @@ function figure(inner, caption, kind) {
 function resolveLink(href) {
   if (/^https?:/.test(href) || href.startsWith('#')) return href;
   const [file, anchor] = href.split('#');
+  if (file.startsWith(`../${E.other.docs}/`)) {
+    return `${OTHER}${anchor ? '#' + anchor : ''}`;
+  }
   if (/^0\d-.*\.md$/.test(path.basename(file))) {
     return anchor ? `#${anchor}` : `#ch${Number(path.basename(file).slice(0, 2))}`;
   }
@@ -205,26 +257,24 @@ function tocHtml() {
 
 const coverHtml = `
 <header class="cover" id="top">
-  <p class="eyebrow">架构说明 · acme-cloud · 2026 年 10 月</p>
-  <h1 class="cover-title">Spring Cloud 中大型微服务系统架构说明</h1>
-  <p class="lead">运行在 Kubernetes 上的微服务参考架构：数据库 MySQL / PostgreSQL 二选一，消息 Kafka / RabbitMQ 二选一，
-  覆盖测试、预发布、生产三套环境，给出全自建与阿里云两种落地方案，并附可直接编译运行的初始工程。</p>
+  <p class="eyebrow">${escapeHtml(E.eyebrow)}</p>
+  <h1 class="cover-title">${escapeHtml(E.heading)}</h1>
+  <p class="lead">${E.lead}</p>
   <ul class="stack" aria-label="版本基线">
-    <li><span>Java</span>21</li>
-    <li><span>Spring Boot</span>4.0.9</li>
-    <li><span>Spring Cloud</span>2025.1.4</li>
-    <li><span>Spring Cloud Alibaba</span>2025.1.0.0</li>
-    <li><span>Nacos</span>3.1</li>
-    <li><span>K8s</span>1.32+</li>
+    ${E.stack.map(([k, v]) => `<li><span>${escapeHtml(k)}</span>${escapeHtml(v)}</li>`).join('\n    ')}
   </ul>
   <ol class="chapter-cards">
-    <li><a href="#ch1"><b>运行架构</b><span>环境规划 · 全自建 · 阿里云 · AWS / Azure · 发布与灰度</span></a></li>
-    <li><a href="#ch2"><b>Spring Cloud 技术落地</b><span>Nacos · Gateway · Feign · 熔断 · Stream · 认证 · 可观测</span></a></li>
-    <li><a href="#ch3"><b>团队开发规范</b><span>命名 · 分层 · API · 数据库 · 消息 · 安全 · 测试 · 评审</span></a></li>
-    <li><a href="#ch4"><b>初始代码结构</b><span>模块全景 · 目录树 · 关键代码 · 本地开发 · 新增服务</span></a></li>
+    ${E.cards.map(([t, d], i) => `<li><a href="#ch${i + 1}"><b>${escapeHtml(t)}</b><span>${escapeHtml(d)}</span></a></li>`).join('\n    ')}
   </ol>
   <p class="hint">图表均为矢量图：点击任意图表或“全屏查看”可放大至 100%~300% 阅读。</p>
 </header>`;
+
+function editionSwitch() {
+  const current = `<span class="edition current" aria-current="page">${escapeHtml(E.label)}</span>`;
+  const other = `<a class="edition" href="${OTHER}">${escapeHtml(E.other.label)}</a>`;
+  const items = editionKey === 'spring' ? current + other : other + current;
+  return `<nav class="edition-switch" aria-label="技术栈版本">${items}</nav>`;
+}
 
 const css = fs.readFileSync(path.join(here, 'page.css'), 'utf8');
 const js = fs.readFileSync(path.join(here, 'page.js'), 'utf8');
@@ -233,17 +283,19 @@ function pageBody(content) {
   return `<a class="skip" href="#content">跳到正文</a>
 <div class="shell">
   <aside class="sidebar" aria-label="目录">
-    <a class="brand" href="#top">acme-cloud<small>架构说明</small></a>
+    <a class="brand" href="#top">${E.code}<small>架构说明</small></a>
+    ${editionSwitch()}
     <button type="button" class="toc-toggle" data-toc="hide">收起目录 · 图表更大</button>
     <nav>${tocHtml()}</nav>
   </aside>
   <main id="content">
+    <div class="mobile-switch">${editionSwitch()}</div>
     ${coverHtml}
     <details class="toc-mobile"><summary>目录</summary><nav>${tocHtml()}</nav></details>
     ${content}
     <footer class="page-foot">
-      <p>源文件：<a href="${REPO_URL}/tree/${REPO_REF}/docs" target="_blank" rel="noopener">docs/*.md</a> ·
-      初始工程：<a href="${REPO_URL}/tree/${REPO_REF}/acme-cloud" target="_blank" rel="noopener">acme-cloud/</a> ·
+      <p>源文件：<a href="${REPO_URL}/tree/${REPO_REF}/${E.docs}" target="_blank" rel="noopener">${E.docs}/*.md</a> ·
+      初始工程：<a href="${REPO_URL}/tree/${REPO_REF}/${E.code}" target="_blank" rel="noopener">${E.code}/</a> ·
       本页由 tools/doc-site 生成</p>
     </footer>
   </main>
@@ -265,9 +317,9 @@ function pageBody(content) {
 </div>`;
 }
 
-const HEAD = `<title>Spring Cloud 微服务架构说明</title>
+const HEAD = `<title>${E.title}</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Spring Cloud + Kubernetes 中大型微服务系统架构说明：环境规划、全自建与阿里云方案、Spring Cloud 技术落地、团队规范与初始代码结构">
+<meta name="description" content="${E.description}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;800&display=swap">
@@ -278,6 +330,8 @@ let content = CHAPTERS.map(renderChapter).join('\n');
 const svgs = await renderMermaid(mermaidBlocks);
 content = content.replace(/<!--MERMAID:(\d+)-->/g, (_, n) => svgs[Number(n)]);
 const body = pageBody(content);
+// 仓库内：两个版本互相链接到同目录的 HTML
+const fullBody = body.replaceAll(OTHER, E.other.file);
 
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, `<!doctype html>
@@ -288,7 +342,7 @@ fs.writeFileSync(outFile, `<!doctype html>
 ${HEAD}
 </head>
 <body>
-${body}
+${fullBody}
 <script>${js}</script>
 </body>
 </html>
@@ -296,9 +350,11 @@ ${body}
 console.log(`generated ${path.relative(root, outFile)} (${(fs.statSync(outFile).size / 1024).toFixed(0)} KB, `
   + `${mermaidBlocks.length} mermaid, ${toc.length} toc entries)`);
 
-const fragIdx = process.argv.indexOf('--fragment');
-if (fragIdx > 0) {
-  const fragFile = path.resolve(process.argv[fragIdx + 1]);
-  fs.writeFileSync(fragFile, `${HEAD}\n${body}\n<script>${js}</script>\n`);
-  console.log(`generated fragment ${fragFile}`);
+const fragment = arg('--fragment');
+if (fragment) {
+  // 发布版：链接到另一个版本的页面地址（发布平台只支持简单锚点，因此不带章节锚点）
+  const otherUrl = process.env.OTHER_EDITION_URL ?? `${REPO_URL}/blob/${REPO_REF}/${E.other.file === 'go.html' ? 'html/go.html' : 'html/index.html'}`;
+  const fragBody = body.replace(new RegExp(`${OTHER}(#[^"]*)?`, 'g'), otherUrl);
+  fs.writeFileSync(path.resolve(fragment), `${HEAD}\n${fragBody}\n<script>${js}</script>\n`);
+  console.log(`generated fragment ${path.resolve(fragment)}`);
 }

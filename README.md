@@ -1,77 +1,71 @@
-# Spring Cloud 中大型微服务系统架构说明
+# 中大型微服务系统架构说明（Spring Cloud 版 / Go 版）
 
-基于 **Spring Boot 4 + Spring Cloud 2025.1 + Spring Cloud Alibaba**、运行在 **Kubernetes** 上的中大型微服务系统参考架构，
-数据库 **MySQL / PostgreSQL** 二选一，消息 **Kafka / RabbitMQ** 二选一。仓库包含两部分：
+运行在 **Kubernetes** 上的中大型微服务系统参考架构，数据库 **MySQL / PostgreSQL** 二选一，消息 **Kafka / RabbitMQ** 二选一。
+同一套架构设计提供两种技术栈实现，两个版本的环境规划、部署方案、接口约定、交付流程完全一致：
 
-1. **架构说明文档**（Markdown + HTML 两个版本，图文并茂）；
-2. **可运行的初始工程** [`acme-cloud/`](acme-cloud)：框架层 starter、网关、认证中心、三个示例业务服务、Helm / GitOps / CI 部署清单，`mvn verify` 全部通过。
+| | Spring Cloud 版 | Go 版 |
+| --- | --- | --- |
+| 技术栈 | Java 21 · Spring Boot 4.0.9 · Spring Cloud 2025.1.4 · Spring Cloud Alibaba 2025.1.0.0 | Go 1.26 · Kratos 2.9.2 · gRPC · nacos-sdk-go 2.3.5 · Watermill 1.5 · GORM 1.31 |
+| 文档（Markdown） | [`docs/`](docs) | [`docs-go/`](docs-go) |
+| 文档（HTML，单文件可离线打开） | [`html/index.html`](html/index.html) | [`html/go.html`](html/go.html) |
+| 初始工程 | [`acme-cloud/`](acme-cloud)：Maven 多模块，30 个测试 | [`acme-go/`](acme-go)：单一 Go module，19 个测试函数，golangci-lint / buf lint 0 问题 |
 
-> 📘 **HTML 版本**：[`html/index.html`](html/index.html)，单文件、可离线打开；内置目录导航，所有图表为矢量图，点击可全屏放大查看。
+> 📘 HTML 版内置目录导航与版本切换，所有图表为矢量图，点击可全屏放大查看（100%~300%）。
 
 ![Spring Cloud 各项技术在运行时的位置](docs/images/spring-cloud-landscape.svg)
 
 ## 文档目录
 
-| 章节 | 内容 |
-| --- | --- |
-| [第 1 章 运行架构](docs/01-runtime-architecture.md) | 测试 / 预发布 / 生产环境规划与隔离；**方案 A 全自建**、**方案 B 阿里云** 的完整运行架构；AWS / Azure 对应方案与组件对照；高可用、发布、灰度、回滚 |
-| [第 2 章 Spring Cloud 技术落地](docs/02-spring-cloud-in-practice.md) | 版本基线；Nacos 注册发现与配置、Gateway、OpenFeign + LoadBalancer、CircuitBreaker、Stream + Outbox、Authorization Server、可观测在整套环境中的位置与各环境差异 |
-| [第 3 章 团队开发规范](docs/03-team-conventions.md) | 服务拆分与命名、仓库与分支、分层与包结构、API / 错误码、服务调用、数据库、消息、配置、日志、安全、测试、部署规范与评审清单 |
-| [第 4 章 初始代码结构](docs/04-code-structure.md) | 模块全景与目录树、平台 starter、关键代码导读、本地开发、构建部署、新增服务步骤 |
+| 章节 | Spring Cloud 版 | Go 版 |
+| --- | --- | --- |
+| 第 1 章 运行架构 | [测试 / 预发布 / 生产环境规划；方案 A 全自建、方案 B 阿里云；AWS / Azure；高可用、发布、灰度、回滚](docs/01-runtime-architecture.md) | [同左，另含 Go 版运行差异（镜像、启动、内存、端口、探针）](docs-go/01-runtime-architecture.md) |
+| 第 2 章 技术落地 | [Nacos、Gateway、OpenFeign + LoadBalancer、CircuitBreaker、Stream + Outbox、Authorization Server、可观测](docs/02-spring-cloud-in-practice.md) | [框架选型、Spring Cloud → Go 逐项对照、Nacos、Go 网关、gRPC + Protobuf、熔断、Watermill + Outbox、认证、可观测、两版互通](docs-go/02-go-stack-in-practice.md) |
+| 第 3 章 团队规范 | [拆分与命名、分支、分层、API / 错误码、调用、数据库、消息、配置、日志、安全、测试、部署、评审清单](docs/03-team-conventions.md) | [工程布局、分层、Protobuf、Go 编码、并发、调用、GORM、测试、工具链、评审清单](docs-go/03-team-conventions.md) |
+| 第 4 章 初始代码结构 | [模块全景、目录树、starter、关键代码、本地开发、新增服务](docs/04-code-structure.md) | [模块全景、目录树、pkg 平台库、关键代码、本地开发、新增服务](docs-go/04-code-structure.md) |
 
 ## 架构图一览
 
-| 图 | 说明 |
-| --- | --- |
-| [环境规划与发布晋级](docs/images/environments.svg) | dev / test / staging / prod 定位、隔离与晋级路径 |
-| [方案 A：全自建](docs/images/arch-selfhosted.svg) | IDC / 私有云生产环境运行架构 |
-| [方案 B：阿里云](docs/images/arch-aliyun.svg) | ACK + MSE + RDS / PolarDB + 云消息队列 + ARMS / SLS |
-| [AWS / Azure](docs/images/arch-aws-azure.svg) | EKS / AKS 对应部署简图 |
-| [组件选型对照](docs/images/cloud-mapping.svg) | 自建 / 阿里云 / AWS / Azure 20 项能力对照 |
-| [Spring Cloud 组件分布](docs/images/spring-cloud-landscape.svg) | 一次请求经过的全部 Spring Cloud 组件 |
-| [服务内部分层](docs/images/service-layers.svg) | interfaces / application / domain / infrastructure |
-| [代码模块与依赖](docs/images/code-modules.svg) | 模块分层与依赖矩阵 |
-
-## 技术栈
-
-| 类别 | 选型 |
-| --- | --- |
-| 语言 / 框架 | Java 21、Spring Boot 4.0.9、Spring Cloud 2025.1.4、Spring Cloud Alibaba 2025.1.0.0 |
-| 注册 / 配置 | Nacos 3.x（自建集群 / 阿里云 MSE） |
-| 网关 / 调用 / 容错 | Spring Cloud Gateway、OpenFeign、Spring Cloud LoadBalancer（灰度）、Spring Cloud CircuitBreaker（Resilience4j） |
-| 消息 | Spring Cloud Stream（Kafka / RabbitMQ Binder）+ 事务发件箱 + 幂等消费 |
-| 安全 | Spring Authorization Server（OAuth2.1 / OIDC）+ Resource Server（JWT） |
-| 数据 | MySQL 8.4 / PostgreSQL 17、MyBatis-Plus 3.5、Flyway |
-| 可观测 | Micrometer、OpenTelemetry（OTLP）、Prometheus / ARMS、Loki / SLS |
-| 交付 | Docker 分层镜像、Helm 通用 Chart、Argo CD（GitOps）、GitLab CI / 云效 |
+| 图 | Spring Cloud 版 | Go 版 |
+| --- | --- | --- |
+| 环境规划与发布晋级 | [environments.svg](docs/images/environments.svg) | [environments.svg](docs-go/images/environments.svg) |
+| 方案 A：全自建 | [arch-selfhosted.svg](docs/images/arch-selfhosted.svg) | [arch-selfhosted.svg](docs-go/images/arch-selfhosted.svg) |
+| 方案 B：阿里云 | [arch-aliyun.svg](docs/images/arch-aliyun.svg) | [arch-aliyun.svg](docs-go/images/arch-aliyun.svg) |
+| AWS / Azure | [arch-aws-azure.svg](docs/images/arch-aws-azure.svg) | [arch-aws-azure.svg](docs-go/images/arch-aws-azure.svg) |
+| 组件选型对照 | [cloud-mapping.svg](docs/images/cloud-mapping.svg) | [cloud-mapping.svg](docs-go/images/cloud-mapping.svg) |
+| 组件运行时分布 | [spring-cloud-landscape.svg](docs/images/spring-cloud-landscape.svg) | [go-landscape.svg](docs-go/images/go-landscape.svg) |
+| 服务内部分层 | [service-layers.svg](docs/images/service-layers.svg) | [service-layers.svg](docs-go/images/service-layers.svg) |
+| 代码模块与依赖 | [code-modules.svg](docs/images/code-modules.svg) | [code-modules.svg](docs-go/images/code-modules.svg) |
 
 ## 快速开始
 
 ```bash
-cd acme-cloud
-mvn verify                                                     # 编译 + 30 个测试（无需外部中间件）
-docker compose -f deploy/local/docker-compose.yml up -d        # 本地中间件
-```
+# Spring Cloud 版
+cd acme-cloud && mvn verify                       # 编译 + 30 个测试（无需外部中间件）
 
-详见 [第 4 章 4.5 本地开发](docs/04-code-structure.md#45-本地开发)。
+# Go 版
+cd acme-go && make test                           # go test -race ./...（无需外部中间件）
+
+# 本地中间件（两个版本相同）
+docker compose -f acme-cloud/deploy/local/docker-compose.yml up -d
+```
 
 ## 仓库结构
 
 ```text
 .
 ├── README.md
-├── docs/                    # Markdown 版文档（GitHub 直接渲染，含 Mermaid 图）
-│   └── images/              # 架构图（SVG）
-├── html/index.html          # HTML 版文档（由 tools/doc-site 生成）
-├── acme-cloud/              # 初始工程（Maven 多模块 + deploy/）
+├── docs/  · docs-go/        # Markdown 版文档（GitHub 直接渲染，含 Mermaid 图）及各自的 images/
+├── html/                    # HTML 版文档：index.html（Spring Cloud 版）、go.html（Go 版）
+├── acme-cloud/              # Spring Cloud 初始工程（Maven 多模块 + deploy/）
+├── acme-go/                 # Go 初始工程（Go module + deploy/）
 └── tools/
-    ├── diagrams/            # 架构图生成脚本（Python，修改后重新生成 SVG）
+    ├── diagrams/            # 架构图生成脚本（Python）
     └── doc-site/            # HTML 版生成脚本（Markdown → 单文件 HTML，预渲染 Mermaid）
 ```
 
 ## 文档维护
 
 ```bash
-python3 tools/diagrams/build_diagrams.py        # 重新生成 docs/images/*.svg
-cd tools/doc-site && npm ci && npm run build    # 重新生成 html/index.html（需要 Chromium，用于预渲染 Mermaid）
+python3 tools/diagrams/build_diagrams.py        # 重新生成 docs/images 与 docs-go/images 下的 SVG
+cd tools/doc-site && npm ci && npm run build    # 重新生成 html/index.html 与 html/go.html（需要 Chromium 预渲染 Mermaid）
 ```

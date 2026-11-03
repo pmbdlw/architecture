@@ -95,6 +95,15 @@ a:focus-visible, button:focus-visible, summary:focus-visible, .plate-scroll:focu
   font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1.3; margin-bottom: 20px;
 }
 .brand small { font-family: var(--font-body); font-weight: 500; font-size: 12px; letter-spacing: 0.12em; color: var(--muted); }
+/* 技术栈版本切换 */
+.edition-switch { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-bottom: 18px; font-size: 13px; background: var(--surface); }
+.edition-switch .edition { padding: 5px 12px; text-decoration: none; color: var(--muted); }
+.edition-switch .edition + .edition { border-left: 1px solid var(--line); }
+.edition-switch a.edition:hover { color: var(--accent-ink); background: var(--accent-soft); }
+.edition-switch .current { background: var(--accent); color: var(--surface); font-weight: 700; }
+.mobile-switch { padding-top: 24px; }
+.mobile-switch .edition-switch { margin-bottom: 0; }
+@media (min-width: 1080px) { .mobile-switch { display: none; } }
 .toc-list, .toc-list ol { list-style: none; margin: 0; padding: 0; }
 .toc-list { display: grid; gap: 14px; font-size: 13.5px; line-height: 1.5; }
 .toc-ch > a { font-weight: 700; color: var(--fg); }
@@ -251,10 +260,12 @@ figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
 <div class="shell">
   <aside class="sidebar" aria-label="目录">
     <a class="brand" href="#top">acme-cloud<small>架构说明</small></a>
+    <nav class="edition-switch" aria-label="技术栈版本"><span class="edition current" aria-current="page">Spring Cloud 版</span><a class="edition" href="go.html">Go 版</a></nav>
     <button type="button" class="toc-toggle" data-toc="hide">收起目录 · 图表更大</button>
     <nav><ol class="toc-list"><li class="toc-ch"><a href="#ch1">1. 运行架构：环境规划与部署方案</a><ol><li><a href="#11-总体设计原则">1.1 总体设计原则</a></li><li><a href="#12-环境规划">1.2 环境规划</a></li><li><a href="#13-方案-a全自建idc--私有云">1.3 方案 A：全自建（IDC / 私有云）</a></li><li><a href="#14-方案-b阿里云">1.4 方案 B：阿里云</a></li><li><a href="#15-aws--azure-对应方案">1.5 AWS / Azure 对应方案</a></li><li><a href="#16-方案对比与选型建议">1.6 方案对比与选型建议</a></li><li><a href="#17-高可用与容灾">1.7 高可用与容灾</a></li><li><a href="#18-发布流程">1.8 发布流程</a></li></ol></li><li class="toc-ch"><a href="#ch2">2. Spring Cloud 技术在整套环境中的体现</a><ol><li><a href="#21-版本基线">2.1 版本基线</a></li><li><a href="#22-全景一次请求经过哪些-spring-cloud-组件">2.2 全景：一次请求经过哪些 Spring Cloud 组件</a></li><li><a href="#23-服务注册与发现nacos-discovery">2.3 服务注册与发现：Nacos Discovery</a></li><li><a href="#24-配置中心nacos-config">2.4 配置中心：Nacos Config</a></li><li><a href="#25-api-网关spring-cloud-gateway">2.5 API 网关：Spring Cloud Gateway</a></li><li><a href="#26-服务调用openfeign--loadbalancer">2.6 服务调用：OpenFeign + LoadBalancer</a></li><li><a href="#27-容错spring-cloud-circuitbreakerresilience4j">2.7 容错：Spring Cloud CircuitBreaker（Resilience4j）</a></li><li><a href="#28-消息驱动spring-cloud-stream">2.8 消息驱动：Spring Cloud Stream</a></li><li><a href="#29-分布式事务">2.9 分布式事务</a></li><li><a href="#210-认证与授权spring-authorization-server--resource-server">2.10 认证与授权：Spring Authorization Server + Resource Server</a></li><li><a href="#211-可观测性">2.11 可观测性</a></li><li><a href="#212-下单请求全链路时序">2.12 “下单”请求全链路时序</a></li><li><a href="#213-其它常用能力的选型建议">2.13 其它常用能力的选型建议</a></li><li><a href="#214-各项技术在三套环境中的差异汇总">2.14 各项技术在三套环境中的差异汇总</a></li></ol></li><li class="toc-ch"><a href="#ch3">3. Spring Cloud 团队开发规范</a><ol><li><a href="#31-服务拆分与命名">3.1 服务拆分与命名</a></li><li><a href="#32-代码仓库与分支">3.2 代码仓库与分支</a></li><li><a href="#33-工程与包结构">3.3 工程与包结构</a></li><li><a href="#34-分层规范">3.4 分层规范</a></li><li><a href="#35-api-设计规范">3.5 API 设计规范</a></li><li><a href="#36-服务间调用规范">3.6 服务间调用规范</a></li><li><a href="#37-数据库规范">3.7 数据库规范</a></li><li><a href="#38-消息规范">3.8 消息规范</a></li><li><a href="#39-配置规范">3.9 配置规范</a></li><li><a href="#310-日志与可观测规范">3.10 日志与可观测规范</a></li><li><a href="#311-安全规范">3.11 安全规范</a></li><li><a href="#312-测试规范">3.12 测试规范</a></li><li><a href="#313-部署与运行规范">3.13 部署与运行规范</a></li><li><a href="#314-代码评审清单">3.14 代码评审清单</a></li><li><a href="#315-新服务接入流程">3.15 新服务接入流程</a></li></ol></li><li class="toc-ch"><a href="#ch4">4. 初始代码结构</a><ol><li><a href="#41-模块全景">4.1 模块全景</a></li><li><a href="#42-目录树">4.2 目录树</a></li><li><a href="#43-平台-starter-一览">4.3 平台 starter 一览</a></li><li><a href="#44-关键代码导读">4.4 关键代码导读</a></li><li><a href="#45-本地开发">4.5 本地开发</a></li><li><a href="#46-构建镜像与部署">4.6 构建镜像与部署</a></li><li><a href="#47-新增一个服务以-inventory-service-为例">4.7 新增一个服务（以 `inventory-service` 为例）</a></li><li><a href="#48-后续可扩展项">4.8 后续可扩展项</a></li></ol></li></ol></nav>
   </aside>
   <main id="content">
+    <div class="mobile-switch"><nav class="edition-switch" aria-label="技术栈版本"><span class="edition current" aria-current="page">Spring Cloud 版</span><a class="edition" href="go.html">Go 版</a></nav></div>
     
 <header class="cover" id="top">
   <p class="eyebrow">架构说明 · acme-cloud · 2026 年 10 月</p>
@@ -1783,7 +1794,7 @@ figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
 <text x="534" y="1006.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="400" fill="#7a3200" text-anchor="start" dominant-baseline="middle">云效 + ACK One GitOps</text>
 <text x="834" y="1006.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="400" fill="#1f2937" text-anchor="start" dominant-baseline="middle">CodePipeline + Argo CD</text>
 <text x="1134" y="1006.0" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13.5" font-weight="400" fill="#003f73" text-anchor="start" dominant-baseline="middle">Azure DevOps + Flux / Argo CD</text>
-<text x="20" y="1058" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">注：AWS / Azure 无托管 Nacos，可在集群内部署 Nacos（StatefulSet + 托管 MySQL），或切换为 Spring Cloud Kubernetes （K8s Service 发现 + ConfigMap 配置），详见第 2 章“注册发现方案选择”。</text>
+<text x="20" y="1058" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC','Source Han Sans SC','WenQuanYi Zen Hei',system-ui,sans-serif" font-size="13" font-weight="400" fill="#475569" text-anchor="start" dominant-baseline="middle">注：AWS / Azure 无托管 Nacos，可在集群内部署 Nacos（StatefulSet + 托管 MySQL），或切换为 Spring Cloud Kubernetes（K8s Service 发现 + ConfigMap 配置），详见第 2 章“注册发现方案选择”。</text>
 </svg>
 </div><figcaption><span class="fig-no">图 1-7</span><span class="fig-text">组件选型对照</span><button type="button" class="zoom-btn">全屏查看</button></figcaption></figure>
 <p>迁移到 AWS / Azure 时需要关注的差异：</p>

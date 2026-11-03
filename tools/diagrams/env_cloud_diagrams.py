@@ -4,7 +4,7 @@ from svgkit import Svg, C, text_width, wrap
 W = 1440
 
 
-def environments():
+def environments(stack="spring"):
     s = Svg(W, 900, "环境规划与发布晋级")
     s.title_block("环境规划与发布晋级：一次构建，逐级晋级",
                   "同一个镜像（同一 digest）从测试一路晋级到生产；环境差异只存在于 GitOps values、Nacos 命名空间与 K8s Secret 中")
@@ -13,7 +13,8 @@ def environments():
     s.group(20, 100, 1400, 140, "交付流水线", kind="ops")
     steps = [("开发者", ["feature/* 短分支", "本地 docker compose 自测"], "user"),
              ("GitLab / 云效", ["Merge Request", "Code Review ≥1 人"], "git"),
-             ("CI 流水线", ["编译 · 单测/集成测试", "ArchUnit · Sonar · Trivy"], "gear"),
+             ("CI 流水线", ["编译 · 单测/集成测试", "ArchUnit · Sonar · Trivy"] if stack == "spring"
+              else ["go vet · lint · go test -race", "buf breaking · Trivy"], "gear"),
              ("镜像仓库", ["Harbor / ACR", "tag = Git 短 SHA"], "box"),
              ("GitOps 仓库", ["envs/<env>/<服务>.yaml", "只改 image.tag/digest"], "doc"),
              ("Argo CD", ["比对期望状态", "同步到各环境集群"], "k8s")]
@@ -103,7 +104,9 @@ def environments():
     return s
 
 
-def aws_azure():
+def aws_azure(stack="spring"):
+    gw = "Spring Cloud Gateway" if stack == "spring" else "Go 网关"
+    alt = "或改用 Spring Cloud Kubernetes 方案" if stack == "spring" else "或改用 K8s 原生发现（Kratos kubernetes registry）"
     s = Svg(W, 704, "AWS 与 Azure 对应部署架构")
     s.title_block("AWS / Azure 对应部署架构（简图）",
                   "应用代码、Helm Chart、GitOps 流程完全复用；只替换托管云产品与 platform-env 中的地址、身份绑定方式")
@@ -129,14 +132,14 @@ def aws_azure():
             elif row[0] == "cluster":
                 _, name, sub = row
                 s.group(x0 + 20, y + 12, 650, 214, name, kind="k8s", sub=sub, label_size=14)
-                s.box(x0 + 36, y + 38, 618, 40, "Ingress（" + side + "）→ acme-gateway（Spring Cloud Gateway）", kind="access",
+                s.box(x0 + 36, y + 38, 618, 40, "Ingress（" + side + "）→ acme-gateway（" + gw + "）", kind="access",
                       title_size=13.5)
                 s.box(x0 + 36, y + 90, 300, 56, "acme-gateway · acme-auth", ["网关 · 认证中心"], kind="cloud",
                       title_size=13.5, line_size=12)
                 s.box(x0 + 354, y + 90, 300, 56, "user / order / notification", ["业务服务（同一镜像）"], kind="svc",
                       title_size=13.5, line_size=12)
                 s.box(x0 + 36, y + 158, 618, 52, "Nacos 集群（StatefulSet ×3）",
-                      ["托管云无 Nacos：在集群内自建；或改用 Spring Cloud Kubernetes 方案"], kind="cloud", title_size=13.5,
+                      ["托管云无 Nacos：在集群内自建；" + alt], kind="cloud", title_size=13.5,
                       line_size=12, icon="compass")
                 y += 240
             elif row[0] == "grid":
@@ -209,11 +212,19 @@ MAPPING = [
 ]
 
 
-def mapping():
+MAPPING_GO = {
+    "API 网关": ("API 网关", "lb", "Go 网关（或 APISIX）", "Go 网关（可选 MSE 云原生网关）", "Go 网关（可选 API Gateway）",
+               "Go 网关（可选 API Management）"),
+}
+
+
+def mapping(stack="spring"):
+    rows = [MAPPING_GO.get(r[0], r) if stack == "go" else r for r in MAPPING]
     rh, top = 44, 150
-    s = Svg(W, top + len(MAPPING) * rh + 70, "自建 阿里云 AWS Azure 组件对照")
+    s = Svg(W, top + len(rows) * rh + 70, "自建 阿里云 AWS Azure 组件对照")
     s.title_block("组件选型对照：自建 / 阿里云 / AWS / Azure",
-                  "Spring Cloud 代码对四种部署形态完全一致；差异集中在平台层，由 platform-env ConfigMap、Secret 与 Helm values 吸收")
+                  ("Spring Cloud" if stack == "spring" else "Go 服务") +
+                  " 代码对四种部署形态完全一致；差异集中在平台层，由 platform-env ConfigMap、Secret 与 Helm values 吸收")
     cols = [("能力", "gray", 200), ("方案 A：全自建", "ops", 300), ("方案 B：阿里云", "aliyun", 300),
             ("AWS", "aws", 300), ("Azure", "azure", 300)]
     x = 20
@@ -237,7 +248,7 @@ def mapping():
         else:
             s.text(x + (w - 6) / 2, 118, name, size=16, weight=700, fill="#ffffff", anchor="middle")
         x += w
-    for r, row in enumerate(MAPPING):
+    for r, row in enumerate(rows):
         y = top + r * rh
         s.rect(20, y, 1400 - 6, rh - 4, fill="#f8fafc" if r % 2 == 0 else "#ffffff", rx=6)
         cat, ic = row[0], row[1]
@@ -250,7 +261,9 @@ def mapping():
             for li, ln in enumerate(lines):
                 yy = y + rh / 2 - 2 + (li - (len(lines) - 1) / 2) * 17
                 s.text(cx + 14, yy, ln, size=13.5, fill=C[kind][2] if kind != "aws" else "#1f2937")
-    s.note(20, top + len(MAPPING) * rh + 28,
-           "注：AWS / Azure 无托管 Nacos，可在集群内部署 Nacos（StatefulSet + 托管 MySQL），或切换为 Spring Cloud Kubernetes "
-           "（K8s Service 发现 + ConfigMap 配置），详见第 2 章“注册发现方案选择”。", size=13, fill="#475569")
+    alt = ("切换为 Spring Cloud Kubernetes（K8s Service 发现 + ConfigMap 配置）" if stack == "spring"
+           else "切换为 K8s 原生服务发现（Kratos kubernetes registry / DNS）+ ConfigMap 配置")
+    s.note(20, top + len(rows) * rh + 28,
+           "注：AWS / Azure 无托管 Nacos，可在集群内部署 Nacos（StatefulSet + 托管 MySQL），或" + alt +
+           "，详见第 2 章“注册发现方案选择”。", size=13, fill="#475569")
     return s

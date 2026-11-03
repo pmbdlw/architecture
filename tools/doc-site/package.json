@@ -4,7 +4,7 @@
   "type": "module",
   "description": "把 docs/*.md 生成单文件 HTML（预渲染 Mermaid、预高亮代码、内联 SVG 架构图）",
   "scripts": {
-    "build": "node build.mjs"
+    "build": "node build.mjs --edition spring && node build.mjs --edition go"
   },
   "dependencies": {
     "highlight.js": "11.11.1",

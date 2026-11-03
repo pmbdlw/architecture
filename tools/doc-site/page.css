@@ -84,6 +84,15 @@ a:focus-visible, button:focus-visible, summary:focus-visible, .plate-scroll:focu
   font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1.3; margin-bottom: 20px;
 }
 .brand small { font-family: var(--font-body); font-weight: 500; font-size: 12px; letter-spacing: 0.12em; color: var(--muted); }
+/* 技术栈版本切换 */
+.edition-switch { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-bottom: 18px; font-size: 13px; background: var(--surface); }
+.edition-switch .edition { padding: 5px 12px; text-decoration: none; color: var(--muted); }
+.edition-switch .edition + .edition { border-left: 1px solid var(--line); }
+.edition-switch a.edition:hover { color: var(--accent-ink); background: var(--accent-soft); }
+.edition-switch .current { background: var(--accent); color: var(--surface); font-weight: 700; }
+.mobile-switch { padding-top: 24px; }
+.mobile-switch .edition-switch { margin-bottom: 0; }
+@media (min-width: 1080px) { .mobile-switch { display: none; } }
 .toc-list, .toc-list ol { list-style: none; margin: 0; padding: 0; }
 .toc-list { display: grid; gap: 14px; font-size: 13.5px; line-height: 1.5; }
 .toc-ch > a { font-weight: 700; color: var(--fg); }
