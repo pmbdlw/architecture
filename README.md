@@ -8,7 +8,8 @@
 | 技术栈 | Java 21 · Spring Boot 4.0.9 · Spring Cloud 2025.1.4 · Spring Cloud Alibaba 2025.1.0.0 | Go 1.26 · Kratos 2.9.2 · gRPC · nacos-sdk-go 2.3.5 · Watermill 1.5 · GORM 1.31 |
 | 文档（Markdown） | [`docs/`](docs) | [`docs-go/`](docs-go) |
 | 文档（HTML，单文件可离线打开） | [`html/index.html`](html/index.html) | [`html/go.html`](html/go.html) |
-| 初始工程 | [`acme-cloud/`](acme-cloud)：Maven 多模块，30 个测试 | [`acme-go/`](acme-go)：单一 Go module，19 个测试函数，golangci-lint / buf lint 0 问题 |
+| 初始工程 | [`acme-cloud/`](acme-cloud)：Maven 多模块 | [`acme-go/`](acme-go)：单一 Go module，golangci-lint / buf lint 0 问题 |
+| 本地集群演示 | [`local-cluster/`](local-cluster)：`scripts/up.sh spring` | [`local-cluster/`](local-cluster)：`scripts/up.sh go` |
 
 > 📘 HTML 版内置目录导航与版本切换，所有图表为矢量图，点击可全屏放大查看（100%~300%）。
 
@@ -37,11 +38,23 @@
 | 服务内部分层 | [service-layers.svg](docs/images/service-layers.svg) | [service-layers.svg](docs-go/images/service-layers.svg) |
 | 代码模块与依赖 | [code-modules.svg](docs/images/code-modules.svg) | [code-modules.svg](docs-go/images/code-modules.svg) |
 
+## 本地集群：完整体系演示
+
+[`local-cluster/`](local-cluster) 用 kind 在本机搭建多节点 Kubernetes 集群，一条命令部署中间件、可观测组件与整套服务，并提供可复现的演示场景（灰度发布、动态配置、MQ 宕机与发件箱补发、熔断降级、滚动发布零中断、压测扩容），用 Jaeger / Grafana / Prometheus / Nacos 控制台分析系统行为。
+
+```bash
+cd local-cluster
+scripts/up.sh go          # 或 spring；DB=postgres MQ=rabbitmq 切换中间件
+scripts/demo.sh go all    # 运行全部演示场景
+```
+
+![一次下单在 Jaeger 中的完整链路](local-cluster/docs/images/jaeger-trace.png)
+
 ## 快速开始
 
 ```bash
 # Spring Cloud 版
-cd acme-cloud && mvn verify                       # 编译 + 30 个测试（无需外部中间件）
+cd acme-cloud && mvn verify                       # 编译 + 全部测试（无需外部中间件）
 
 # Go 版
 cd acme-go && make test                           # go test -race ./...（无需外部中间件）
@@ -59,6 +72,7 @@ docker compose -f acme-cloud/deploy/local/docker-compose.yml up -d
 ├── html/                    # HTML 版文档：index.html（Spring Cloud 版）、go.html（Go 版）
 ├── acme-cloud/              # Spring Cloud 初始工程（Maven 多模块 + deploy/）
 ├── acme-go/                 # Go 初始工程（Go module + deploy/）
+├── local-cluster/           # 本地 kind 集群：中间件、可观测、两套服务的部署与演示脚本
 └── tools/
     ├── diagrams/            # 架构图生成脚本（Python）
     └── doc-site/            # HTML 版生成脚本（Markdown → 单文件 HTML，预渲染 Mermaid）

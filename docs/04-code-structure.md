@@ -2,7 +2,7 @@
 
 > 初始工程位于仓库的 [`acme-cloud/`](../acme-cloud) 目录，是一个**可编译、可测试、可部署**的 Maven 多模块项目，覆盖前三章提到的全部技术：
 > Nacos 注册/配置、Spring Cloud Gateway、OpenFeign + LoadBalancer（灰度）、CircuitBreaker（Resilience4j）、Spring Cloud Stream（Kafka / RabbitMQ）+ 事务发件箱、Spring Authorization Server + Resource Server、MyBatis-Plus + Flyway（MySQL / PostgreSQL）、Micrometer + OpenTelemetry、Helm + Argo CD。
-> `mvn verify` 包含 20 个模块、30 个测试（单元、服务级集成、ArchUnit）。
+> `mvn verify` 包含 20 个模块、33 个测试（单元、服务级集成、ArchUnit）。
 
 ## 4.1 模块全景
 
@@ -109,6 +109,8 @@ public class AcmeDefaultsEnvironmentPostProcessor implements EnvironmentPostProc
 }
 ```
 
+但 `spring.config.import: optional:nacos:...` 在 ConfigData 阶段就要连接 Nacos，那时完整的默认配置还没加入——客户端拿不到 `NACOS_SERVER_ADDR`，会连到 `127.0.0.1:8848`（本机开发看不出问题，到了集群里就读不到 Nacos 配置）。因此还有一个在 ConfigData **之前**运行的 `AcmeNacosBootstrapEnvironmentPostProcessor`，只把 `spring.cloud.nacos.*` 放进 `defaultProperties`（优先级同样最低）。
+
 因此业务服务的 `application.yml` 只需要：
 
 ```yaml
@@ -174,7 +176,26 @@ static List<ServiceInstance> select(List<ServiceInstance> instances, String gray
 }
 ```
 
-通过 `@LoadBalancerClients(defaultConfiguration = GrayLoadBalancerClientConfiguration.class)` 对所有下游生效，Servlet（Feign）与 WebFlux（网关）分别使用阻塞 / 响应式的服务发现。
+通过 `@LoadBalancerClients(defaultConfiguration = GrayLoadBalancerClientConfiguration.class)` 对所有下游生效（网关与 Feign 共用）：
+
+```java
+@Bean
+public ServiceInstanceListSupplier grayServiceInstanceListSupplier(ConfigurableApplicationContext context) {
+    ServiceInstanceListSupplierBuilder builder = ServiceInstanceListSupplier.builder();
+    builder = context.getBeanProvider(ReactiveDiscoveryClient.class).getIfAvailable() != null
+            ? builder.withDiscoveryClient() : builder.withBlockingDiscoveryClient();
+    return builder.withCaching()                                   // 缓存的是“全部实例”
+            .with((ctx, delegate) -> new GrayServiceInstanceListSupplier(delegate))  // 每个请求再按灰度标签筛选
+            .build(context);
+}
+```
+
+两个容易踩的坑（`GrayLoadBalancerIntegrationTest` 通过真实的 LoadBalancer 子上下文覆盖）：
+
+- 不能用 `@ConditionalOnWebApplication` 区分网关与普通服务——LoadBalancer 子上下文不是 Web 上下文，条件永远不成立，会悄悄退回默认实例列表；
+- 灰度筛选必须包在缓存**外层**：缓存只实现了不带请求参数的 `get()`，放在里层会丢掉请求中的灰度标签。
+
+网关的灰度规则 `GrayProperties` 必须是可变的 JavaBean：Nacos 配置变更后 Spring Cloud 只会重新绑定 JavaBean 风格的配置类，record / 构造器绑定的配置不会刷新。
 
 ### 4.4.5 幂等消费
 
@@ -307,7 +328,29 @@ grep -rl 'user' . | xargs sed -i 's/user-service/inventory-service/g; s/user-api
 5. 新增 `deploy/gitops/envs/{test,staging,prod}/inventory-service.yaml` 与 ExternalSecret；
 6. `mvn verify` 通过（`ArchitectureTest` 会立即约束新服务的分层）。
 
-## 4.8 后续可扩展项
+## 4.8 本地集群：完整体系演示
+
+[`local-cluster/`](../local-cluster) 用 kind 在本机搭建 1 控制面 + 3 工作节点（3 个可用区）的集群，部署中间件（Nacos、MySQL / PostgreSQL、Kafka / RabbitMQ、Redis）、可观测组件（Prometheus + 告警规则、Grafana、Jaeger）与全部 5 个服务。服务使用本工程 `deploy/helm/acme-service` 与 `deploy/docker/Dockerfile`，本地差异只写在 `local-cluster/stacks/spring/values` 中。
+
+```bash
+cd local-cluster
+scripts/up.sh spring                          # 集群 + 中间件 + 可观测 + 5 个服务 + 冒烟验证
+DB=postgres MQ=rabbitmq scripts/up.sh spring  # 换成 PostgreSQL + RabbitMQ（RabbitMQ Binder 镜像）
+```
+
+| 场景 | 命令 | 观察点 |
+| --- | --- | --- |
+| 冒烟 | `scripts/demo.sh spring smoke` | 一次下单在 Jaeger 中是同一条链路：网关 → 订单 → 用户 → 发件箱投递 → 通知 |
+| 灰度发布 | `scripts/demo.sh spring gray` | Nacos 下发规则后白名单用户全部进入 v2，灰度标签随调用链透传 |
+| 动态配置 | `scripts/demo.sh spring ratelimit` | 修改 Nacos 中的网关限流，立即出现 429 |
+| 事务发件箱 | `scripts/demo.sh spring outbox` | 停掉 MQ 下单照常成功，积压告警，恢复后自动补发 |
+| 熔断降级 | `scripts/demo.sh spring breaker` | 依赖下线时快速失败 `503 C0503` |
+| 滚动发布 | `scripts/demo.sh spring rollout` | 发布期间持续请求 0 失败 |
+| 压测 / 弹性 | `scripts/demo.sh spring load 120 4` | Grafana 看板、HPA 扩容 |
+
+使用说明、截图与分析指南见 [local-cluster/README.md](../local-cluster/README.md)。
+
+## 4.9 后续可扩展项
 
 初始工程刻意保持精简，以下能力按需接入（选型建议见第 2 章 2.13）：
 

@@ -41,11 +41,19 @@ prom() { # 即时查询，输出第一个结果的值
 # 金额用字符串传递（两套实现都接受），避免浮点误差
 order_json() { printf '{"productCode":"SKU-%s","quantity":%s,"amount":"%s"}' "$1" "${2:-1}" "${3:-99.90}"; }
 
-place_orders() { # place_orders <令牌> <数量> → 统计状态码
+place_orders() { # place_orders <令牌> <数量> → 每行一个状态码
   local tok=$1 n=$2 i
   for ((i = 1; i <= n; i++)); do
     api "$tok" POST /api/v1/orders "$(order_json "$i")" | cut -f1
-  done | sort | uniq -c | sed 's/^/      /'
+  done
+}
+
+# 打印统计；若给出正则，则每一行都必须匹配，否则场景失败（CI 中据此判断）
+tally() {
+  local expect=${1:-} what=${2:-} lines
+  lines=$(cat)
+  sort <<<"$lines" | uniq -c | sed 's/^/      /' >&2
+  if [[ -n "$expect" ]] && grep -Evq "$expect" <<<"$lines"; then die "不符合预期：$what"; fi
 }
 
 nacos_publish() { # nacos_publish <dataId> （内容来自 stdin）
@@ -148,7 +156,7 @@ scenario_lb() {
   step "负载均衡：同一个请求连续发 10 次，观察由哪些实例处理"
   local tok
   tok=$(token alice)
-  for _ in $(seq 10); do api "$tok" GET /api/v1/users/1001 | cut -f2; done | sort | uniq -c | sed 's/^/      /'
+  for _ in $(seq 10); do api "$tok" GET /api/v1/users/1001 | cut -f2; done | tally
   echo "      user-service 有多个副本时请求被轮询分配；实例来自 Nacos 注册表，而非 K8s Service" >&2
 }
 
@@ -166,8 +174,8 @@ scenario_gray() {
 
   local alice bob
   alice=$(token alice); bob=$(token bob)
-  log "灰度规则关闭时：alice 的请求"
-  for _ in $(seq 6); do api "$alice" GET /api/v1/users/1001 | cut -f2; done | sort | uniq -c | sed 's/^/      /'
+  log "灰度规则关闭时：alice 的请求 → 灰度实例不接收普通流量"
+  for _ in $(seq 6); do api "$alice" GET /api/v1/users/1001 | cut -f2; done | tally '^user-service@[^ ]+$' "规则关闭时请求不应落到灰度实例"
 
   log "Nacos 下发灰度规则：uids=[1001]（alice）"
   if [[ $STACK == go ]]; then
@@ -179,16 +187,16 @@ scenario_gray() {
   fi
   sleep 5
   log "alice（白名单用户）→ 应全部落到 gray=v2 实例"
-  for _ in $(seq 6); do api "$alice" GET /api/v1/users/1001 | cut -f2; done | sort | uniq -c | sed 's/^/      /'
+  for _ in $(seq 6); do api "$alice" GET /api/v1/users/1001 | cut -f2; done | tally 'gray=v2$' "白名单用户应全部进入灰度"
   log "bob（非白名单）→ 应全部落到稳定版实例"
-  for _ in $(seq 6); do api "$bob" GET /api/v1/users/1002 | cut -f2; done | sort | uniq -c | sed 's/^/      /'
+  for _ in $(seq 6); do api "$bob" GET /api/v1/users/1002 | cut -f2; done | tally '^user-service@[^ ]+$' "非白名单用户应全部走稳定版"
   log "alice 下单：order-service 没有灰度实例 → 走稳定版；灰度标签随调用链透传，order-service 调 user-service 时选中 v2"
   local res
   res=$(api "$alice" POST /api/v1/orders "$(order_json gray)")
   echo "      alice 下单 HTTP $(cut -f1 <<<"$res")" >&2
   trace_summary "$(cut -f3- <<<"$res" | field traceId)" 3
   log "测试同学可用请求头 X-Gray-Tag: v2 指定版本（allowClientHeader=true，仅 test/local）"
-  for _ in $(seq 3); do api "$bob" GET /api/v1/users/1002 "" -H 'X-Gray-Tag: v2' | cut -f2; done | sort | uniq -c | sed 's/^/      /'
+  for _ in $(seq 3); do api "$bob" GET /api/v1/users/1002 "" -H 'X-Gray-Tag: v2' | cut -f2; done | tally 'gray=v2$' "X-Gray-Tag 应指定到灰度版本"
 
   if [[ "${KEEP:-}" == 1 ]]; then
     warn "KEEP=1：保留灰度版本与规则"
@@ -212,18 +220,19 @@ scenario_breaker() {
   log "连续下单 30 次（状态码统计）"
   local start end
   start=$(date +%s)
-  place_orders "$tok" 30
+  place_orders "$tok" 30 | tally '^503$' "依赖不可用时应快速失败为 503"
   end=$(date +%s)
   echo "      30 次请求耗时 $((end - start)) 秒：依赖不可用时快速失败（错误码 C0503），而不是等待超时" >&2
   if [[ $STACK == spring ]]; then
-    echo "      熔断器状态：$(prom 'max(resilience4j_circuitbreaker_state{state="open",service="order-service"})')（1 = OPEN），Prometheus Alerts 页可看到 CircuitBreakerOpen" >&2
+    sleep 12 # 等 Prometheus 抓取一轮
+    echo "      最近 2 分钟熔断器是否打开过：$(prom 'max(max_over_time(resilience4j_circuitbreaker_state{state="open",service="order-service"}[2m]))')（1 = 打开过），Prometheus Alerts 页可看到 CircuitBreakerOpen" >&2
   fi
   log "恢复 user-service"
-  kapp scale deployment user-service --replicas=2 >/dev/null
+  kapp scale deployment user-service --replicas="${REPLICAS:-2}" >/dev/null
   wait_rollout "$NS_APP" deployment user-service 420s
   sleep 10
   log "恢复后下单 5 次"
-  place_orders "$tok" 5
+  place_orders "$tok" 5 | tally '^20[01]$' "恢复后下单应成功"
 }
 
 scenario_outbox() {
@@ -235,7 +244,7 @@ scenario_outbox() {
   k -n "$NS_MW" scale statefulset "$mq_sts" --replicas=0 >/dev/null
   k -n "$NS_MW" wait --for=delete pod "$mq_sts-0" --timeout=120s >/dev/null 2>&1 || true
   log "MQ 不可用期间下单 5 次 —— 订单与事件在同一本地事务中写库，下单照常成功"
-  place_orders "$tok" 5
+  place_orders "$tok" 5 | tally '^20[01]$' "MQ 不可用时下单应照常成功"
   sleep 15
   echo "      发件箱积压 acme_outbox_pending = $(prom 'max(acme_outbox_pending)')（Grafana“发件箱积压”面板 / Prometheus Alerts: OutboxBacklog）" >&2
   log "恢复 $mq_sts"
@@ -250,7 +259,7 @@ scenario_outbox() {
   if [[ "$pending" == 0 ]]; then
     ok "积压已清零：Relay 自动补发，notification-service 幂等消费（重复投递会被 consumed_event 表拦截）"
   else
-    warn "积压尚未清零（当前 $pending），Relay 会继续重试；可稍后在 Grafana 中观察"
+    die "MQ 恢复 200 秒后积压仍未清零（当前 $pending）：检查 order-service 日志与 outbox_event 表"
   fi
 }
 
@@ -261,8 +270,11 @@ scenario_ratelimit() {
   set_rate_limit 2 2
   sleep 5
   log "并发 20 个请求（状态码统计，429 = 被限流）"
-  seq 20 | xargs -P 10 -I{} curl -s --noproxy '*' -o /dev/null -w '%{http_code}\n' \
-    -H "Authorization: Bearer $tok" "$GATEWAY_URL/api/v1/users/1001" | sort | uniq -c | sed 's/^/      /'
+  local codes
+  codes=$(seq 20 | xargs -P 10 -I{} curl -s --noproxy '*' -o /dev/null -w '%{http_code}\n' \
+    -H "Authorization: Bearer $tok" "$GATEWAY_URL/api/v1/users/1001")
+  tally '^(200|429)$' "只应出现 200 / 429" <<<"$codes"
+  grep -qx 429 <<<"$codes" || { restore_nacos acme-gateway.yaml; die "限流调低后应出现 429"; }
   log "恢复限流配置"
   restore_nacos acme-gateway.yaml
 }
@@ -286,7 +298,7 @@ scenario_rollout() {
   wait_rollout "$NS_APP" deployment user-service 420s
   wait "$bg" || true
   log "60 秒内的请求结果"
-  sort "$out" | uniq -c | sed 's/^/      /'
+  tally '^200$' "滚动发布期间不应有失败请求" <"$out" || { rm -f "$out"; exit 1; }
   rm -f "$out"
   echo "      preStop 等待 + 注册中心摘除 + 优雅停机：发布期间没有 5xx 即为零中断" >&2
 }

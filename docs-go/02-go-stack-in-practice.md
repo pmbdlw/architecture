@@ -115,10 +115,13 @@ sequenceDiagram
     Note over P: Endpoint 摘除，Ingress 停止转发
     K->>P: preStop 结束，发送 SIGTERM
     P->>N: Kratos App.Stop：注销实例
-    P->>P: /readyz 返回 503 · 停止 HTTP / gRPC / 消费者 / Relay（≤30s）
     N-->>C: 推送实例变更，调用方不再选中该实例
+    Note over P: 等待 server.drainDelay（3s），期间照常处理请求
+    P->>P: /readyz 返回 503 · 停止 HTTP / gRPC / 消费者 / Relay（≤30s）
     P->>K: 进程退出（总时长 < terminationGracePeriodSeconds=60s）
 ```
+
+Kratos 注销完成后会立即停止服务器，调用方此时可能还没收到 Nacos 推送。`pkg/server.NewApp` 在注销后等待 `server.drainDelay`（默认 3s）再停止服务器，本地集群的 `demo.sh go rollout` 场景验证：重启 user-service 期间持续请求 0 失败。
 
 ## 2.6 配置：分层加载与热更新
 
@@ -320,6 +323,11 @@ sequenceDiagram
 ```
 
 `mq.Relay` 实现了 Kratos 的 `transport.Server`，与 HTTP / gRPC 服务器一起由应用管理启停。
+
+- **链路不断**：写入发件箱时记录当前请求的 `traceparent`（`trace_parent` 列），Relay 以它为父节点创建 PRODUCER Span 并写入消息 metadata，`mq.Idempotent` 再恢复为 CONSUMER Span——“HTTP 下单 → 发件箱 → MQ → 消费”在 Jaeger 中是同一条链路；
+- **MQ 不可用时**：Relay 停在第一条失败的事件（不为整批事件各自消耗重试次数，也不打乱顺序），并指数退避（最长 30s）；每条事件最多投递 20 次（约覆盖 8 分钟中断），超过后停止自动投递并告警，排障后把 `retry_count` 置 0 即可重发；
+- **投递事务使用 READ COMMITTED**：MySQL 默认的 REPEATABLE READ 下 `SELECT … FOR UPDATE` 会加间隙锁，MQ 变慢时会阻塞业务事务插入新事件（表现为下单超时）；
+- **指标**：`acme_outbox_pending`（积压）、`acme_outbox_published_total{result}`、`acme_mq_consumed_total{result=processed|duplicate|failed}`。
 
 ### 2.10.3 消费：重试、死信、幂等
 

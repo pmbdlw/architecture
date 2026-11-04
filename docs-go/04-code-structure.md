@@ -2,7 +2,7 @@
 
 > 初始工程位于仓库的 [`acme-go/`](../acme-go) 目录：一个 Go module，包含平台库、网关、认证中心和三个示例业务服务，以及完整的部署清单。覆盖前三章提到的全部技术：
 > Nacos 注册 / 配置、Go 网关、gRPC + Protobuf + 灰度选择器、熔断、Watermill（Kafka / RabbitMQ）+ 事务发件箱、OAuth 2.1 认证中心 + JWT 资源服务、GORM + goose（MySQL / PostgreSQL）、OpenTelemetry + Prometheus + slog、Helm + Argo CD。
-> `make test`（`go test -race ./...`）包含 19 个测试函数（单元、服务级集成、分层规则），`golangci-lint` 与 `buf lint` 均为 0 问题。
+> `make test`（`go test -race ./...`）包含 20 个测试函数（单元、服务级集成、分层规则），`golangci-lint` 与 `buf lint` 均为 0 问题。
 
 ## 4.1 模块全景
 
@@ -326,7 +326,29 @@ grep -rl 'user' app/inventory | xargs sed -i 's#app/user#app/inventory#g; s/user
 6. 新增 `deploy/gitops/envs/{test,staging,prod}/inventory-service.yaml` 与 ExternalSecret；`Makefile` 的 `APPS` 增加 `inventory`；
 7. `make lint test` 通过（`TestLayers` 会立即约束新服务的分层）。
 
-## 4.8 后续可扩展项
+## 4.8 本地集群：完整体系演示
+
+[`local-cluster/`](../local-cluster) 用 kind 在本机搭建 1 控制面 + 3 工作节点（3 个可用区）的集群，部署中间件（Nacos、MySQL / PostgreSQL、Kafka / RabbitMQ、Redis）、可观测组件（Prometheus + 告警规则、Grafana、Jaeger）与全部 5 个服务。服务使用本工程 `deploy/helm/acme-service` 与 `deploy/docker/Dockerfile`（`BUILD_MODE=prebuilt` 直接打包宿主机编译的二进制），本地差异只写在 `local-cluster/stacks/go/values` 中。
+
+```bash
+cd local-cluster
+scripts/up.sh go                              # 集群 + 中间件 + 可观测 + 5 个服务 + 冒烟验证
+DB=postgres MQ=rabbitmq scripts/up.sh go      # 换成 PostgreSQL + RabbitMQ（运行时切换，镜像不变）
+```
+
+| 场景 | 命令 | 观察点 |
+| --- | --- | --- |
+| 冒烟 | `scripts/demo.sh go smoke` | 一次下单在 Jaeger 中是同一条链路：网关 → 订单 → 用户 → 发件箱投递 → 通知 |
+| 灰度发布 | `scripts/demo.sh go gray` | Nacos 下发规则后白名单用户全部进入 v2，灰度标签随调用链透传 |
+| 动态配置 | `scripts/demo.sh go ratelimit` | 修改 Nacos 中的网关限流，立即出现 429 |
+| 事务发件箱 | `scripts/demo.sh go outbox` | 停掉 MQ 下单照常成功，积压告警，恢复后自动补发 |
+| 熔断降级 | `scripts/demo.sh go breaker` | 依赖下线时快速失败 `503 C0503` |
+| 滚动发布 | `scripts/demo.sh go rollout` | 发布期间持续请求 0 失败 |
+| 压测 / 弹性 | `scripts/demo.sh go load 120 4` | Grafana 看板、HPA 扩容 |
+
+使用说明、截图与分析指南见 [local-cluster/README.md](../local-cluster/README.md)。
+
+## 4.9 后续可扩展项
 
 - protovalidate（proto 中声明校验规则）、uber/fx（服务多时的依赖注入）
 - Testcontainers（MySQL / PostgreSQL / Kafka 真实环境集成测试）、govulncheck

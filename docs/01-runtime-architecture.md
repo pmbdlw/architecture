@@ -193,7 +193,7 @@ flowchart TB
 | 层级 | 措施 |
 | --- | --- |
 | 应用 | ≥3 副本，`topologySpreadConstraints` 跨可用区 / 节点打散；PDB `maxUnavailable: 1`；滚动更新 `maxUnavailable: 0` |
-| 实例下线 | `preStop` 等待 10s（Nacos / Ingress 摘流量）→ SIGTERM → Spring 优雅停机 30s → 进程退出，`terminationGracePeriodSeconds: 60` |
+| 实例下线 | `preStop` 等待 10s（Nacos / Ingress 摘流量）→ SIGTERM → 先从 Nacos 注销并等待 5s（调用方刷新实例列表）→ Spring 优雅停机 ≤30s → 进程退出，`terminationGracePeriodSeconds: 60` |
 | 依赖故障 | Feign / 网关熔断 + 超时；消息异步解耦；Outbox 保证事件不丢 |
 | 数据 | 主从 / MGR 自动切换；RPO ≤ 5 分钟（自建）/ ≤ 1 分钟（RDS）；每季度恢复演练 |
 | 注册中心 | Nacos 集群 3 节点；客户端本地缓存实例列表，Nacos 短暂不可用不影响已建立的调用 |

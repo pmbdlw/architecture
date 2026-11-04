@@ -4,6 +4,7 @@
 #   scripts/up.sh spring                 # Spring Cloud 版
 #   DB=postgres MQ=rabbitmq scripts/up.sh go
 #   scripts/up.sh go apps                # 只重新构建并发布业务服务（改代码后）
+#   REPLICAS=1 scripts/up.sh spring      # 每个服务 1 个副本（内存紧张的机器 / CI）
 # 切换技术栈时会卸载另一套服务并重建业务库（两套实现的迁移工具不同：Flyway / goose）。
 source "$(dirname "$0")/lib.sh"
 
@@ -63,7 +64,16 @@ switch_stack_if_needed() {
     warn "集群中当前部署的是 $current 版，切换到 $STACK 版：卸载服务并重建业务库"
     "$LC_DIR/scripts/down.sh" apps
     reset_databases
+    reset_rabbitmq
   fi
+}
+
+# 两套实现声明的 RabbitMQ 交换机类型不同（Spring：topic，Go：fanout），同名交换机不能共存，切换时清空 vhost
+reset_rabbitmq() {
+  k -n "$NS_MW" get statefulset rabbitmq >/dev/null 2>&1 || return 0
+  log "重置 RabbitMQ vhost（交换机 / 队列）"
+  k -n "$NS_MW" exec rabbitmq-0 -- sh -c \
+    'rabbitmqctl -q delete_vhost / && rabbitmqctl -q add_vhost / && rabbitmqctl -q set_permissions -p / acme ".*" ".*" ".*"' >/dev/null
 }
 
 reset_databases() {
@@ -89,28 +99,28 @@ platform_config() {
 
   local mw=$NS_MW.svc.cluster.local
   local common=(
-    --from-literal=NACOS_SERVER_ADDR=nacos.$mw:8848
-    --from-literal=OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger.$NS_OBS.svc.cluster.local:4318/v1/traces
+    "--from-literal=NACOS_SERVER_ADDR=nacos.$mw:8848"
+    "--from-literal=OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger.$NS_OBS.svc.cluster.local:4318/v1/traces"
     # iss 声明：从宿主机获取令牌，因此与宿主机访问认证中心的地址一致
-    --from-literal=AUTH_ISSUER_URI=$AUTH_URL
-    --from-literal=AUTH_JWK_SET_URI=http://acme-auth.$NS_APP.svc.cluster.local/oauth2/jwks
+    "--from-literal=AUTH_ISSUER_URI=$AUTH_URL"
+    "--from-literal=AUTH_JWK_SET_URI=http://acme-auth.$NS_APP.svc.cluster.local/oauth2/jwks"
     # 本地开启：响应头 X-Served-By 显示处理实例，观察负载均衡与灰度
-    --from-literal=SERVED_BY_HEADER=true
-    --from-literal=GRAY_ALLOW_CLIENT_HEADER=true
+    "--from-literal=SERVED_BY_HEADER=true"
+    "--from-literal=GRAY_ALLOW_CLIENT_HEADER=true"
   )
   if [[ $STACK == go ]]; then
     common+=(
-      --from-literal=DB_DRIVER=$DB
-      --from-literal=MQ_DRIVER=$MQ
-      --from-literal=KAFKA_BROKERS=kafka.$mw:9092
-      --from-literal=REDIS_ADDR=redis.$mw:6379
+      "--from-literal=DB_DRIVER=$DB"
+      "--from-literal=MQ_DRIVER=$MQ"
+      "--from-literal=KAFKA_BROKERS=kafka.$mw:9092"
+      "--from-literal=REDIS_ADDR=redis.$mw:6379"
     )
   else
     common+=(
-      --from-literal=KAFKA_BROKERS=kafka.$mw:9092
-      --from-literal=RABBITMQ_ADDRESSES=rabbitmq.$mw:5672
-      --from-literal=REDIS_HOST=redis.$mw
-      --from-literal=REDIS_PORT=6379
+      "--from-literal=KAFKA_BROKERS=kafka.$mw:9092"
+      "--from-literal=RABBITMQ_ADDRESSES=rabbitmq.$mw:5672"
+      "--from-literal=REDIS_HOST=redis.$mw"
+      "--from-literal=REDIS_PORT=6379"
     )
   fi
   k -n "$NS_APP" create configmap acme-platform-env "${common[@]}" --dry-run=client -o yaml | k apply -f - >/dev/null
@@ -189,7 +199,7 @@ helm_release() {
   log "helm upgrade --install $release（$tag）"
   helm --kube-context "$KUBE_CONTEXT" upgrade --install "$release" "$CHART" -n "$NS_APP" \
     -f "$STACK_DIR/values/_common.yaml" -f "$STACK_DIR/values/$release.yaml" \
-    --set image.tag="$tag" >/dev/null
+    --set image.tag="$tag" ${REPLICAS:+--set replicaCount=$REPLICAS --set autoscaling.minReplicas=$REPLICAS} >/dev/null
 }
 
 seed_and_check() {

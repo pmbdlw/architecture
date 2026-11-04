@@ -1,4 +1,5 @@
-# shellcheck shell=bash
+# shellcheck shell=bash disable=SC2034
+# （SC2034：这里定义的变量供 source 本文件的脚本使用）
 # 公共变量与函数，由其他脚本 source。所有参数都可以用环境变量覆盖。
 set -euo pipefail
 
@@ -14,6 +15,7 @@ KIND_NODE_IMAGE=${KIND_NODE_IMAGE:-kindest/node:v1.34.0}
 # 镜像加速：docker.io 拉取受限时设置，如 IMAGE_MIRROR=mirror.gcr.io 或企业 Harbor 代理地址
 IMAGE_MIRROR=${IMAGE_MIRROR:-}
 DB=${DB:-mysql}          # mysql | postgres
+REPLICAS=${REPLICAS:-}   # 覆盖每个服务的副本数（默认按 stacks/<stack>/values，多为 2）
 MQ=${MQ:-kafka}          # kafka | rabbitmq
 NS_APP=acme
 NS_MW=middleware
@@ -49,9 +51,6 @@ stack_arg() {
   [[ "$s" == "spring" || "$s" == "go" ]] || die "第一个参数必须是技术栈：spring 或 go"
   echo "$s"
 }
-
-# 服务清单：<Helm release 名> <values 文件名>
-SERVICES=(acme-auth acme-gateway user-service order-service notification-service)
 
 # 等待 Deployment / StatefulSet 就绪
 wait_rollout() {

@@ -88,13 +88,15 @@ sequenceDiagram
     participant C as 调用方（LoadBalancer 缓存）
     K->>P: 删除 Pod：执行 preStop（sleep 10s）
     Note over P: 同时 Endpoint 摘除，Ingress 停止转发
-    P-->>N: （仍在线）调用方缓存逐步刷新
     K->>P: preStop 结束，发送 SIGTERM
-    P->>N: Spring 关闭：注销实例
+    P->>N: ContextClosedEvent：立即注销实例（GracefulDeregistration）
+    N-->>C: 推送实例变更；LoadBalancer 实例缓存（TTL 2s）刷新后不再选中
+    Note over P: 等待 acme.shutdown.drain-delay（5s），期间照常处理请求
     P->>P: 优雅停机：处理完存量请求（≤30s）
-    N-->>C: 推送实例变更，调用方不再选中该实例
     P->>K: 进程退出（总时长 < terminationGracePeriodSeconds=60s）
 ```
+
+> Spring Cloud 默认在**销毁 Bean 时**才注销实例，此时 Web 容器已不再接收新请求，而调用方手里还有缓存的实例列表（LoadBalancer 默认缓存 35s），滚动发布期间会出现少量 503。`acme-starter-base` 因此做了两件事：收到关闭事件**先注销、再等待 drain-delay**，并把实例缓存 TTL 缩短到 2s（实例列表由 Nacos 推送到本地，缩短 TTL 几乎没有开销）。本地集群的 `demo.sh spring rollout` 场景验证：重启 user-service 期间持续请求 0 失败。
 
 上线时，readinessProbe（`/actuator/health/readiness`）通过前 Pod 不接收 Ingress 流量；Nacos 注册发生在 Web 服务器启动后，因此调用方不会在应用未就绪时选中它。
 
@@ -330,7 +332,11 @@ sequenceDiagram
 ```
 
 - 投递语义是**至少一次**：Relay 发送成功但更新状态前崩溃，会重发；因此**消费端必须幂等**（`IdempotentConsumer` 以 `consumer + event_id` 为主键去重）；
-- `outbox_event`、`consumed_event` 表结构见各服务的 Flyway 脚本，已发送事件按天归档清理。
+- `outbox_event`、`consumed_event` 表结构见各服务的 Flyway 脚本，已发送事件按天归档清理；
+- **链路不断**：写入发件箱时记录当前请求的 `traceparent`（`trace_parent` 列），Relay 以它为父节点创建 PRODUCER Span 并写入消息头，`IdempotentConsumer` 再恢复为 CONSUMER Span——“HTTP 下单 → 发件箱 → MQ → 消费”在 Jaeger 中是同一条链路；
+- **MQ 不可用时**：Relay 停在第一条失败的事件（不为整批事件各自消耗重试次数，也不打乱顺序），并指数退避（最长 30s）；每条事件最多投递 20 次（约覆盖 8 分钟中断），超过后停止自动投递并告警，排障后把 `retry_count` 置 0 即可重发；
+- **投递事务使用 READ COMMITTED**：MySQL 默认的 REPEATABLE READ 下 `SELECT … FOR UPDATE` 会加间隙锁，MQ 变慢时会阻塞业务事务插入新事件（表现为下单超时）；
+- **指标**：`acme_outbox_pending`（积压）、`acme_outbox_published_total{result}`、`acme_mq_consumed_total{result=processed|duplicate|failed}`。
 
 ### 2.8.4 事件头规范
 

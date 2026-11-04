@@ -1,0 +1,81 @@
+name: Local cluster e2e
+
+# 在 kind 集群中部署整套体系并运行演示场景，保证 local-cluster/ 与两套工程始终可用
+on:
+  push:
+    paths:
+      - "local-cluster/**"
+      - "acme-cloud/**"
+      - "acme-go/**"
+      - ".github/workflows/local-cluster.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: local-cluster-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: ${{ matrix.stack }} · ${{ matrix.db }} · ${{ matrix.mq }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { stack: go, db: mysql, mq: kafka }
+          - { stack: go, db: postgres, mq: rabbitmq }
+          - { stack: spring, db: mysql, mq: kafka }
+    env:
+      DB: ${{ matrix.db }}
+      MQ: ${{ matrix.mq }}
+      # CI 机器内存有限：每个服务 1 个副本、2 个工作节点
+      REPLICAS: "1"
+      KIND_WORKERS: "2"
+      IMAGE_MIRROR: mirror.gcr.io
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        if: matrix.stack == 'go'
+        with:
+          go-version-file: acme-go/go.mod
+          cache-dependency-path: acme-go/go.sum
+
+      - uses: actions/setup-java@v5
+        if: matrix.stack == 'spring'
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - uses: azure/setup-helm@v4
+
+      - name: Install kind
+        run: |
+          curl -fsSLo kind https://kind.sigs.k8s.io/dl/v0.30.0/kind-linux-amd64
+          sudo install kind /usr/local/bin/kind
+
+      - name: Deploy (cluster + middleware + observability + services + smoke)
+        run: local-cluster/scripts/up.sh ${{ matrix.stack }}
+
+      - name: Scenario · gray release
+        run: local-cluster/scripts/demo.sh ${{ matrix.stack }} gray
+
+      - name: Scenario · dynamic config (rate limit)
+        run: local-cluster/scripts/demo.sh ${{ matrix.stack }} ratelimit
+
+      - name: Scenario · outbox while MQ is down
+        run: local-cluster/scripts/demo.sh ${{ matrix.stack }} outbox
+
+      - name: Scenario · circuit breaker
+        run: local-cluster/scripts/demo.sh ${{ matrix.stack }} breaker
+
+      - name: Diagnostics
+        if: failure()
+        run: |
+          kubectl get pods -A -o wide
+          kubectl -n acme get events --sort-by=.lastTimestamp | tail -n 40
+          for d in acme-gateway acme-auth user-service order-service notification-service; do
+            echo "::group::logs $d"; kubectl -n acme logs deploy/$d --tail=80 || true; echo "::endgroup::"
+          done
