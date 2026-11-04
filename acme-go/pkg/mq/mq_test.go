@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"errors"
+	"fmt"
 	"io/fs"
 	"strings"
 	"testing"
@@ -99,5 +100,51 @@ func TestKafkaProducerConfigIsValid(t *testing.T) {
 	// 幂等生产者对 sarama 配置有约束（acks=all、MaxOpenRequests=1、版本 ≥ 0.11），在单元测试中提前校验
 	if err := mq.KafkaProducerConfig().Validate(); err != nil {
 		t.Fatalf("invalid kafka producer config: %v", err)
+	}
+}
+
+// failingPublisher 模拟 MQ 不可用。
+type failingPublisher struct{ calls int }
+
+func (p *failingPublisher) Publish(string, ...*message.Message) error {
+	p.calls++
+	return errors.New("broker unavailable")
+}
+
+func (p *failingPublisher) Close() error { return nil }
+
+func TestRelayStopsAtFirstFailureWithoutBurningRetries(t *testing.T) {
+	sub, err := fsSub()
+	if err != nil {
+		t.Fatal(err)
+	}
+	db := testkit.DB(t, sub)
+	ctx := context.Background()
+	outbox := mq.NewOutbox(db, "order-service")
+	tx := database.NewTransaction(db)
+	for i := range 3 {
+		if err := tx.InTx(ctx, func(ctx context.Context) error {
+			_, err := outbox.Publish(ctx, "acme.order.events", "order.created", fmt.Sprint(i), wrapperspb.String("x"))
+			return err
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	pub := &failingPublisher{}
+	relay := mq.NewRelay(db, pub, conf.Outbox{BatchSize: 10, MaxRetries: 3}, log.DefaultLogger)
+	if n, err := relay.RelayAll(ctx); err == nil || n != 0 {
+		t.Fatalf("relay should report the failure, sent %d err %v", n, err)
+	}
+	// MQ 不可用时只尝试第一条，整批不会各自消耗一次重试
+	if pub.calls != 1 {
+		t.Fatalf("publisher called %d times, want 1", pub.calls)
+	}
+	var retries []int
+	if err := db.Model(&mq.OutboxEvent{}).Order("retry_count DESC").Pluck("retry_count", &retries).Error; err != nil {
+		t.Fatal(err)
+	}
+	if fmt.Sprint(retries) != "[1 0 0]" {
+		t.Fatalf("retry counts %v, want one event retried once and the rest untouched", retries)
 	}
 }

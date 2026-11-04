@@ -102,14 +102,20 @@ func (r *Relay) Start(ctx context.Context) error {
 	if interval <= 0 {
 		interval = time.Second
 	}
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
+	// 投递失败（通常是 MQ 不可用）时指数退避，最长 maxRelayBackoff；成功后恢复正常轮询间隔
+	wait := interval
+	timer := time.NewTimer(wait)
+	defer timer.Stop()
 	for {
 		select {
-		case <-ticker.C:
+		case <-timer.C:
 			if _, err := r.RelayAll(ctx); err != nil {
-				r.log.Warnw("msg", "发件箱投递失败", "error", err)
+				wait = min(max(wait*2, interval), maxRelayBackoff)
+				r.log.Warnw("msg", "发件箱投递失败，稍后重试", "error", err, "retry_in", wait.String())
+			} else {
+				wait = interval
 			}
+			timer.Reset(wait)
 		case <-r.stop:
 			return nil
 		case <-ctx.Done():
@@ -117,6 +123,9 @@ func (r *Relay) Start(ctx context.Context) error {
 		}
 	}
 }
+
+// maxRelayBackoff MQ 持续不可用时两次投递尝试之间的最长间隔。
+const maxRelayBackoff = 30 * time.Second
 
 func (r *Relay) Stop(context.Context) error {
 	close(r.stop)
@@ -144,6 +153,7 @@ func (r *Relay) batchSize() int {
 
 func (r *Relay) relayBatch(ctx context.Context) (int, error) {
 	sent := 0
+	var publishErr error
 	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var events []OutboxEvent
 		q := `SELECT * FROM outbox_event WHERE status = 0 AND retry_count < ? ORDER BY created_at LIMIT ? ` + r.cfg.LockClause
@@ -158,12 +168,12 @@ func (r *Relay) relayBatch(ctx context.Context) (int, error) {
 			}
 			metrics().published.Add(ctx, 1, attrs("topic", e.Topic, "type", e.EventType, "result", result))
 			if err != nil {
+				// 停在第一条失败的事件：MQ 不可用时整批都会失败，逐条重试只会白白耗尽每条事件的重试次数，
+				// 也会打乱同一聚合的事件顺序。只给这一条计一次重试，其余事件留到下一轮。
 				r.log.Warnw("msg", "投递发件箱事件失败", "event_id", e.EventID, "type", e.EventType, "error", err)
-				if err := tx.Model(&OutboxEvent{}).Where("event_id = ?", e.EventID).
-					Update("retry_count", gorm.Expr("retry_count + 1")).Error; err != nil {
-					return err
-				}
-				continue
+				publishErr = err
+				return tx.Model(&OutboxEvent{}).Where("event_id = ?", e.EventID).
+					Update("retry_count", gorm.Expr("retry_count + 1")).Error
 			}
 			now := time.Now().UTC()
 			if err := tx.Model(&OutboxEvent{}).Where("event_id = ?", e.EventID).
@@ -174,6 +184,9 @@ func (r *Relay) relayBatch(ctx context.Context) (int, error) {
 		}
 		return nil
 	}, relayTxOptions(r.db))
+	if err == nil {
+		err = publishErr // 事务已提交（已发送的标记与失败计数都保留），再把投递失败返回给调用方
+	}
 	return sent, err
 }
 

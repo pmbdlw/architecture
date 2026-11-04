@@ -71,7 +71,9 @@ mq:
   outbox:
     pollInterval: 1s
     batchSize: 100
-    maxRetries: 10
+    # 每条事件的最大投递次数。MQ 不可用时 Relay 指数退避（最长 30s），20 次约可覆盖 8 分钟的中断；
+    # 超过后不再自动投递（acme_outbox_pending 持续 > 0 触发告警），排除故障后把 retry_count 置 0 即可重新投递
+    maxRetries: 20
     lockClause: FOR UPDATE SKIP LOCKED
 
 client:

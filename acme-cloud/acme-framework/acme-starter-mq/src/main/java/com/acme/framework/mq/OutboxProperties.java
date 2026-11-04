@@ -9,7 +9,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param relayEnabled 是否启动定时投递（测试中关闭后可手动调用 {@link OutboxRelay#relay()}）
  * @param pollInterval 扫描间隔
  * @param batchSize  每批投递条数
- * @param maxRetries 超过该重试次数的事件不再自动投递，需人工介入（有告警）
+ * @param maxRetries 超过该重试次数的事件不再自动投递，需人工介入（有告警）。MQ 不可用时 Relay 指数退避（最长 30s），
+ *                   20 次约可覆盖 8 分钟的中断；排除故障后把 retry_count 置 0 即可重新投递
  * @param lockClause 行锁子句。MySQL 8 / PostgreSQL 使用 SKIP LOCKED；不支持的数据库（如测试用 H2）可改为 FOR UPDATE
  */
 @ConfigurationProperties(prefix = "acme.mq.outbox")
@@ -17,6 +18,6 @@ public record OutboxProperties(
         @DefaultValue("true") boolean relayEnabled,
         @DefaultValue("1s") Duration pollInterval,
         @DefaultValue("100") int batchSize,
-        @DefaultValue("10") int maxRetries,
+        @DefaultValue("20") int maxRetries,
         @DefaultValue("FOR UPDATE SKIP LOCKED") String lockClause) {
 }

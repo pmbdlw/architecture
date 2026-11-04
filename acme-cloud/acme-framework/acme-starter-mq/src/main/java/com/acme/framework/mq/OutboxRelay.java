@@ -7,6 +7,7 @@ import io.micrometer.tracing.Tracer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import org.slf4j.Logger;
@@ -60,12 +61,36 @@ public class OutboxRelay {
         return copy;
     }
 
-    /** 投递所有待发送事件，由调度器按 {@code acme.mq.outbox.poll-interval} 周期调用。 */
+    /** MQ 持续不可用时两次投递尝试之间的最长间隔。 */
+    static final Duration MAX_BACKOFF = Duration.ofSeconds(30);
+
+    private Duration backoff = Duration.ZERO;
+    private Instant nextAttemptAt = Instant.MIN;
+
+    /**
+     * 投递所有待发送事件，由调度器按 {@code acme.mq.outbox.poll-interval} 周期调用。
+     * 投递失败（通常是 MQ 不可用）时指数退避，最长 {@link #MAX_BACKOFF}；成功后恢复正常节奏。
+     */
     public void relay() {
-        Integer sent;
+        Instant now = Instant.now(clock);
+        if (now.isBefore(nextAttemptAt)) {
+            return;
+        }
+        BatchResult result;
         do {
-            sent = transactionTemplate.execute(status -> relayBatch());
-        } while (sent != null && sent == properties.batchSize());
+            result = transactionTemplate.execute(status -> relayBatch());
+        } while (result != null && !result.failed() && result.sent() == properties.batchSize());
+        if (result != null && result.failed()) {
+            backoff = backoff.isZero() ? properties.pollInterval() : backoff.multipliedBy(2);
+            if (backoff.compareTo(MAX_BACKOFF) > 0) {
+                backoff = MAX_BACKOFF;
+            }
+            nextAttemptAt = Instant.now(clock).plus(backoff);
+            log.warn("发件箱投递失败，{} 秒后重试", backoff.toSeconds());
+        } else {
+            backoff = Duration.ZERO;
+            nextAttemptAt = Instant.MIN;
+        }
     }
 
     /** 当前待发送（含重试中）的事件数，供 {@code acme_outbox_pending} 指标使用。 */
@@ -74,8 +99,11 @@ public class OutboxRelay {
         return count == null ? 0 : count;
     }
 
-    /** 在一个事务中锁定并投递一批事件，返回成功投递的条数。 */
-    int relayBatch() {
+    /**
+     * 在一个事务中锁定并投递一批事件。遇到第一条失败即停止：MQ 不可用时整批都会失败，
+     * 逐条重试只会白白耗尽每条事件的重试次数，也会打乱同一聚合的事件顺序。
+     */
+    BatchResult relayBatch() {
         List<OutboxEvent> events = jdbcTemplate.query("""
                 SELECT event_id, binding_name, event_type, aggregate_id, payload, source, created_at, trace_parent
                 FROM outbox_event
@@ -97,10 +125,15 @@ public class OutboxRelay {
             } else {
                 jdbcTemplate.update("UPDATE outbox_event SET retry_count = retry_count + 1 WHERE event_id = ?",
                         event.eventId());
+                return new BatchResult(sent, true);
             }
         }
-        return sent;
+        return new BatchResult(sent, false);
     }
+
+    record BatchResult(int sent, boolean failed) {
+    }
+
 
     private boolean send(OutboxEvent event) {
         // 以下单请求的链路为父节点，投递动作在链路图中显示为 order-service 的一个 PRODUCER Span
