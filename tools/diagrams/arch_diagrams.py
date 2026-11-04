@@ -16,6 +16,8 @@ LABELS = {
         "nacos": ["注册中心 + 配置中心", "命名空间 = 环境 · 外置 MySQL 存储"],
         "title_suffix": "",
         "artifact": ("Nexus", "Maven 私服"),
+        "infra": "Spring Cloud 基础设施",
+        "apm": "JVM · 接口 · 拓扑",
     },
     "go": {
         "gateway": ["Go 网关 · ReverseProxy · JWT · Redis 限流 · 熔断 · 灰度"],
@@ -28,6 +30,8 @@ LABELS = {
         "nacos": ["注册中心（<服务>.http / .grpc）+ 配置中心", "命名空间 = 环境 · 外置 MySQL 存储"],
         "title_suffix": "（Go 技术栈）",
         "artifact": ("Athens / Nexus", "Go 模块代理"),
+        "infra": "网关 / 认证 / 注册配置",
+        "apm": "Go 运行时 · 接口 · 拓扑",
     },
 }
 
@@ -59,7 +63,7 @@ def selfhosted(stack="spring"):
     s = Svg(W, 1080, "方案A 全自建生产环境运行架构" + L["title_suffix"])
     s.title_block("方案 A：全自建（IDC / 私有云）— 生产环境运行架构" + L["title_suffix"],
                   "测试、预发布环境使用同一套拓扑的缩小版（见“环境规划”）；所有组件均为开源或自有软件")
-    s.legend(870, 34, [("access", "接入"), ("cloud", "Spring Cloud 基础设施"), ("svc", "业务服务")])
+    s.legend(870, 34, [("access", "接入"), ("cloud", L["infra"]), ("svc", "业务服务")])
     s.legend(870, 62, [("data", "数据"), ("mq", "消息/缓存"), ("obs", "可观测"), ("ops", "研发运维")])
     _users(s)
     s.arrow([(720, 194), (720, 232)], color=C["access"][0])
@@ -137,7 +141,7 @@ def aliyun(stack="spring"):
     s = Svg(W, 1080, "方案B 阿里云生产环境运行架构" + L["title_suffix"])
     s.title_block("方案 B：阿里云 — 生产环境运行架构" + L["title_suffix"],
                   "有状态组件全部使用云产品（多可用区高可用），K8s 只运行无状态服务；测试/预发布为同构的独立账号与 VPC")
-    s.legend(870, 34, [("aliyun", "阿里云产品"), ("cloud", "Spring Cloud 基础设施"), ("svc", "业务服务")])
+    s.legend(870, 34, [("aliyun", "阿里云产品"), ("cloud", L["infra"]), ("svc", "业务服务")])
     s.legend(870, 62, [("data", "数据"), ("mq", "消息/缓存"), ("obs", "可观测"), ("ops", "研发治理")])
     _users(s)
     s.arrow([(720, 194), (720, 232)], color=C["aliyun"][0])
@@ -170,7 +174,7 @@ def aliyun(stack="spring"):
         s.box(56 + (i % 2) * 218, 762 + (i // 2) * 72, 208, 62, t, [ln], kind="k8s", title_size=13, line_size=12)
 
     s.group(520, 738, 470, 168, "可观测（云产品）", kind="obs", label_size=13.5)
-    obs = [("ARMS 应用监控", "JVM · 接口 · 拓扑"), ("可观测链路 OTel 版", "接收 OTLP"), ("Prometheus 监控", "托管 + Grafana"),
+    obs = [("ARMS 应用监控", L["apm"]), ("可观测链路 OTel 版", "接收 OTLP"), ("Prometheus 监控", "托管 + Grafana"),
            ("SLS 日志服务", "检索 · 告警 · 投递"), ("云监控", "资源 · 站点探测"), ("ARMS 告警", "钉钉 · 电话")]
     for i, (t, ln) in enumerate(obs):
         s.box(536 + (i % 3) * 150, 762 + (i // 3) * 72, 142, 62, t, [ln], kind="obs", title_size=13, line_size=12)
