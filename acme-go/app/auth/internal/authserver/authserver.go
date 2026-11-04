@@ -1,4 +1,4 @@
-// Package authserver 认证中心（对应 Java 版 Spring Authorization Server）：OAuth 2.1 授权码 + PKCE、客户端凭证，
+// Package authserver 认证中心：OAuth 2.1 授权码 + PKCE、客户端凭证，
 // 签发 RS256 JWT（含 uid / roles 声明），并提供 JWKS 与 OIDC 发现端点。
 //
 // 这是一个精简实现，便于本地与测试环境自包含运行；生产环境推荐使用成熟的 IdP：

@@ -18,10 +18,11 @@
 
 | 章节 | Spring Cloud 版 | Go 版 |
 | --- | --- | --- |
-| 第 1 章 运行架构 | [测试 / 预发布 / 生产环境规划；方案 A 全自建、方案 B 阿里云；AWS / Azure；高可用、发布、灰度、回滚](docs/01-runtime-architecture.md) | [同左，另含 Go 版运行差异（镜像、启动、内存、端口、探针）](docs-go/01-runtime-architecture.md) |
-| 第 2 章 技术落地 | [Nacos、Gateway、OpenFeign + LoadBalancer、CircuitBreaker、Stream + Outbox、Authorization Server、可观测](docs/02-spring-cloud-in-practice.md) | [框架选型、Spring Cloud → Go 逐项对照、Nacos、Go 网关、gRPC + Protobuf、熔断、Watermill + Outbox、认证、可观测、两版互通](docs-go/02-go-stack-in-practice.md) |
-| 第 3 章 团队规范 | [拆分与命名、分支、分层、API / 错误码、调用、数据库、消息、配置、日志、安全、测试、部署、评审清单](docs/03-team-conventions.md) | [工程布局、分层、Protobuf、Go 编码、并发、调用、GORM、测试、工具链、评审清单](docs-go/03-team-conventions.md) |
+| 第 1 章 运行架构 | [测试 / 预发布 / 生产环境规划；方案 A 全自建、方案 B 阿里云；AWS / Azure；高可用、发布、灰度、回滚](docs/01-runtime-architecture.md) | [同样的环境与部署方案，另含 Go 服务的运行特性（镜像、启动、内存、端口、探针）](docs-go/01-runtime-architecture.md) |
+| 第 2 章 技术落地 | [Nacos、Gateway、OpenFeign + LoadBalancer、CircuitBreaker、Stream + Outbox、Authorization Server、可观测](docs/02-spring-cloud-in-practice.md) | [框架选型、能力清单、Nacos、Go 网关、gRPC + Protobuf、熔断、Watermill + Outbox、认证、可观测](docs-go/02-go-stack-in-practice.md) |
+| 第 3 章 团队规范 | [拆分与命名、分支、分层、API / 错误码、调用、数据库、消息、配置、日志、安全、测试、部署、评审清单](docs/03-team-conventions.md) | [拆分与命名、分支、工程布局、分层、Protobuf / 错误码、Go 编码、并发、调用、数据库、消息、配置、日志、安全、测试、部署、评审清单](docs-go/03-team-conventions.md) |
 | 第 4 章 初始代码结构 | [模块全景、目录树、starter、关键代码、本地开发、新增服务](docs/04-code-structure.md) | [模块全景、目录树、pkg 平台库、关键代码、本地开发、新增服务](docs-go/04-code-structure.md) |
+| 附录 | — | [与 Spring Cloud 版对照：能力、运行差异、混合部署注意事项、迁移建议](docs-go/05-appendix-spring-cloud.md) |
 
 ## 架构图一览
 

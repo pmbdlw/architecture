@@ -1,4 +1,4 @@
-// Package client 创建服务间 gRPC 连接（对应 Java 版 acme-starter-feign）：
+// Package client 创建服务间 gRPC 连接：
 // 服务发现 + 灰度实例筛选 + 超时 + 熔断 + 元数据透传 + 错误还原。
 package client
 

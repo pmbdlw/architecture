@@ -2,8 +2,8 @@
 
 Go 1.26 · Kratos v2.9 · gRPC + Protobuf · Nacos（nacos-sdk-go v2）· GORM + goose · Watermill · OpenTelemetry
 
-与 [Spring Cloud 版](../acme-cloud) 实现同一套架构：同样的环境、同样的部署流程、同样的接口约定（统一响应体、错误码、JWT 声明、事件头），两套服务可以混合部署在同一个 Nacos / Kafka / 网关体系中。
-完整说明见 [Go 版第 4 章 初始代码结构](../docs-go/04-code-structure.md)，团队规范见 [Go 版第 3 章](../docs-go/03-team-conventions.md)。
+运行在 Kubernetes 上的中大型 Go 微服务系统初始工程：数据库 MySQL / PostgreSQL 二选一，消息 Kafka / RabbitMQ 二选一，包含平台库、API 网关、认证中心、三个示例业务服务与完整的部署清单。
+完整说明见 [第 4 章 初始代码结构](../docs-go/04-code-structure.md)，团队规范见 [第 3 章](../docs-go/03-team-conventions.md)。
 
 ```bash
 make test                                                # 单元 + 服务级集成测试（SQLite + 进程内消息，无需外部中间件）

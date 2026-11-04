@@ -47,13 +47,13 @@ const EDITIONS = {
     out: 'html/go.html',
     code: 'acme-go',
     chapters: ['01-runtime-architecture.md', '02-go-stack-in-practice.md', '03-team-conventions.md',
-      '04-code-structure.md'],
+      '04-code-structure.md', '05-appendix-spring-cloud.md'],
     title: 'Go 微服务架构说明',
     description: 'Go + Kubernetes 中大型微服务系统架构说明：环境规划、全自建与阿里云方案、Go 技术栈落地、团队规范与初始代码结构',
     heading: 'Go 中大型微服务系统架构说明',
     eyebrow: '架构说明 · acme-go · 2026 年 11 月',
-    lead: `与 Spring Cloud 版相同的架构设计，用 Go 技术栈实现：Kratos + gRPC + Nacos，数据库 MySQL / PostgreSQL 二选一，
-  消息 Kafka / RabbitMQ 二选一，覆盖测试、预发布、生产三套环境与全自建、阿里云两种方案，并附可直接编译运行的初始工程。`,
+    lead: `运行在 Kubernetes 上的 Go 微服务参考架构：Kratos + gRPC + Nacos，数据库 MySQL / PostgreSQL 二选一，
+  消息 Kafka / RabbitMQ 二选一，覆盖测试、预发布、生产三套环境，给出全自建与阿里云两种落地方案，并附可直接编译运行的初始工程。`,
     stack: [['Go', '1.26'], ['Kratos', '2.9.2'], ['gRPC', '1.84'], ['nacos-sdk-go', '2.3.5'], ['Watermill', '1.5'],
       ['GORM', '1.31'], ['K8s', '1.32+']],
     cards: [['运行架构', '环境规划 · 全自建 · 阿里云 · AWS / Azure · Go 运行差异'],
@@ -130,13 +130,19 @@ const marked = new Marked({
     heading({ tokens, depth, text }) {
       const html = this.parser.parseInline(tokens);
       if (depth === 1) {
+        const appendix = text.match(/^附录\s*(.*)$/);
+        if (appendix) {
+          toc.push({ depth, id: `ch${chapterNo}`, text: `附录：${appendix[1]}` });
+          return `<header class="chapter-head" id="ch${chapterNo}"><p class="chapter-no">附录</p>`
+            + `<h1>${escapeHtml(appendix[1])}</h1></header>\n`;
+        }
         const [, num, title] = text.match(/^第\s*(\d+)\s*章\s*(.*)$/) ?? [null, String(chapterNo), text];
         toc.push({ depth, id: `ch${chapterNo}`, text: `${num}. ${title}` });
         return `<header class="chapter-head" id="ch${chapterNo}"><p class="chapter-no">第 ${num} 章</p>`
           + `<h1>${escapeHtml(title)}</h1></header>\n`;
       }
       const id = slug(text);
-      if (depth === 2) toc.push({ depth, id, text });
+      if (depth === 2) toc.push({ depth, id, text: text.replace(/[`*]/g, '') });
       return `<h${depth} id="${id}"><a class="anchor" href="#${id}" aria-hidden="true">#</a>${html}</h${depth}>\n`;
     },
     code({ text, lang }) {

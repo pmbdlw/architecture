@@ -17,14 +17,14 @@ acme-go/
 ├── buf.yaml · buf.gen.yaml                  # proto 检查与代码生成（protoc-gen-go / -go-grpc / Kratos -go-http）
 ├── .golangci.yml                            # 静态检查规则
 │
-├── api/                                     # ① 服务契约（相当于 Java 版的 xxx-api 模块）
+├── api/                                     # ① 服务契约：对外 HTTP、集群内 gRPC、领域事件
 │   ├── user/v1/user.proto                   #   UserService（对外 HTTP）+ UserInternalService（仅 gRPC）
 │   ├── order/v1/order.proto · events.proto  #   OrderService + OrderCreated 事件；events.go 定义 Topic / 事件类型常量
 │   └── notification/v1/notification.proto
 │       └── *.pb.go · *_grpc.pb.go · *_http.pb.go   # 生成代码（提交到仓库）
 ├── third_party/google/api/                  # google.api.http 注解定义
 │
-├── pkg/                                     # ② 平台库（平台组维护，相当于 acme-framework）
+├── pkg/                                     # ② 平台库（平台组维护，业务服务只依赖这里）
 │   ├── conf/                                #   Bootstrap 配置结构、defaults.yaml、分层加载、Nacos v2 配置源
 │   ├── registry/                            #   Nacos 注册中心（<服务>.http / .grpc）与实例元数据
 │   ├── selector/gray/                       #   灰度实例筛选（网关与 gRPC 客户端共用）
@@ -52,7 +52,7 @@ acme-go/
 │
 └── deploy/                                  # ④ 交付与运行
     ├── docker/Dockerfile                    #   多阶段构建 → distroless 非 root（ARG APP=order）
-    ├── local/docker-compose.yml             #   本地中间件（与 Spring Cloud 版相同）
+    ├── local/docker-compose.yml             #   本地中间件：MySQL、Nacos、Kafka、Redis、Jaeger（+ PostgreSQL / RabbitMQ）
     ├── helm/acme-service/                   #   通用 Chart：gRPC 端口、/healthz /readyz、GOMEMLIMIT
     ├── gitops/{argocd,envs/{test,staging,prod}}/   # ApplicationSet + 各环境 values（含生产灰度示例）
     ├── k8s/platform/                        #   命名空间、platform-env（自建 / 阿里云）、ExternalSecret、KafkaTopic
@@ -305,7 +305,7 @@ docker build -f deploy/docker/Dockerfile --build-arg APP=order \
 helm template order-service deploy/helm/acme-service -f deploy/gitops/envs/prod/order-service.yaml
 ```
 
-部署流程与 Spring Cloud 版相同：CI 更新 `deploy/gitops/envs/<env>/<服务>.yaml` 中的镜像版本，Argo CD 自动同步 test / staging，prod 由发布负责人手动 Sync。新集群需要准备的平台资源见 `deploy/k8s/platform/` 与 `deploy/nacos/<env>/`。
+部署流程：CI 在 `main` 上构建镜像并扫描漏洞，然后更新 `deploy/gitops/envs/test/*.yaml` 中的镜像版本，Argo CD（`deploy/gitops/argocd/applicationsets.yaml`）自动同步到测试环境；测试通过后人工把同一镜像晋级到 staging；生产在变更审批后写入镜像 digest，由发布负责人在 Argo CD 中手动 Sync，可先发灰度（`envs/prod/order-service-gray.yaml`）。新集群需要准备的平台资源见 `deploy/k8s/platform/` 与 `deploy/nacos/<env>/`。
 
 ## 4.7 新增一个服务（以 `inventory-service` 为例）
 

@@ -1,4 +1,4 @@
-// Package testkit 服务级集成测试工具（对应 Java 版 acme-starter-test）：
+// Package testkit 服务级集成测试工具：
 // 进程内 SQLite 执行真实迁移脚本、本地签发 JWT、内存注册中心、进程内消息总线。
 // 需要验证真实 MySQL / PostgreSQL / Kafka 行为时，改用 Testcontainers（CI 提供 Docker）。
 package testkit

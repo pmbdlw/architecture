@@ -1,4 +1,4 @@
-// Package gateway API 网关（对应 Java 版 Spring Cloud Gateway）。
+// Package gateway API 网关：所有外部请求的统一入口。
 //
 // 过滤链（外 → 内）：链路追踪 → 屏蔽 /internal → CORS → 路由匹配 → JWT 校验 → 限流 → 灰度打标 → 熔断 → 反向代理。
 package gateway

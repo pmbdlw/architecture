@@ -1,4 +1,4 @@
-# 服务契约（相当于 Java 版的 xxx-api 模块）：api/ 下的 proto 文件
+# 服务契约：api/ 下的 proto 文件（对外 HTTP 接口、集群内 gRPC 接口、领域事件）
 version: v2
 modules:
   - path: api

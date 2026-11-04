@@ -1,4 +1,4 @@
-// Package database 持久层规范（对应 Java 版 acme-starter-mybatis）：
+// Package database 持久层规范：
 // GORM 访问 MySQL / PostgreSQL，goose 按数据库方言管理版本化迁移脚本，事务通过 context 传递。
 package database
 

@@ -23,7 +23,7 @@ import (
 	"github.com/acme/acme-go/pkg/testkit"
 )
 
-// fakeUsers 模拟下游 user-service 的 gRPC 客户端（相当于 Java 版的 @MockitoBean UserClient）。
+// fakeUsers 模拟下游 user-service 的 gRPC 客户端，用于构造“用户正常 / 不存在 / 服务不可用”等场景。
 type fakeUsers struct {
 	info *userv1.UserInfo
 	err  error

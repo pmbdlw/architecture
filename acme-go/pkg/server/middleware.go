@@ -1,4 +1,4 @@
-// Package server 装配所有服务统一的 HTTP / gRPC / 管理端口服务器与中间件链（对应 Java 版 starter-base + starter-web）。
+// Package server 装配所有服务统一的 HTTP / gRPC / 管理端口服务器、中间件链与应用生命周期。
 package server
 
 import (

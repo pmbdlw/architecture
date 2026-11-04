@@ -1,5 +1,5 @@
-// Package mq 异步消息规范（对应 Java 版 acme-starter-mq）：
-// Watermill 统一抽象 Kafka / RabbitMQ（相当于 Spring Cloud Stream 的 Binder），
+// Package mq 异步消息规范：
+// Watermill 统一抽象 Kafka / RabbitMQ，
 // 业务代码只依赖 message.Publisher / message.Subscriber，中间件由配置 mq.driver 选择。
 package mq
 

@@ -1,4 +1,4 @@
-// Package auth 实现资源服务器侧的 JWT 校验（对应 Java 版 acme-starter-security）。
+// Package auth 实现资源服务器侧的 JWT 校验。
 //
 // 令牌由认证中心签发（acme-auth / Casdoor / Keycloak / 阿里云 IDaaS 均可），
 // 服务通过 JWKS 拉取公钥验签，并校验 iss。约定的声明：

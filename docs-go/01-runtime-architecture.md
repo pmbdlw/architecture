@@ -2,7 +2,7 @@
 
 > 本章回答“系统跑在哪里、怎么跑”：测试 / 预发布 / 生产三套环境如何划分与隔离，以及两种落地方案——**方案 A 全自建**、**方案 B 阿里云**，并给出 AWS、Azure 的对应关系。
 > 应用层（Go 服务代码、镜像、Helm Chart、GitOps 流程）在所有方案中**完全一致**，差异只在平台层。
-> 本章的环境规划、部署拓扑与 [Spring Cloud 版](../docs/01-runtime-architecture.md) 相同，Go 版特有的运行差异见 1.9。
+> Go 服务自身的运行特性（镜像、启动、内存、端口、探针）见 1.9。
 
 ## 1.1 总体设计原则
 
@@ -108,7 +108,7 @@ flowchart LR
 
 | 资源 | 测试 | 预发布 | 生产 |
 | --- | --- | --- | --- |
-| K8s 节点 | 与开发共用，3 × 16C64G | 3 Master + 3 × 16C64G | 3 Master + 6 × 32C128G（按 HPA 峰值预留 30%） |
+| K8s 节点 | 与开发共用，3 × 8C32G | 3 Master + 3 × 8C32G | 3 Master + 6 × 16C64G（按 HPA 峰值预留 30%，以压测结果为准） |
 | MySQL / PostgreSQL | 单实例 8C32G | 1 主 1 从 8C32G | 1 主 2 从 32C128G，NVMe |
 | Kafka / RabbitMQ | 单节点 | 3 节点 4C16G | 3 节点 16C64G |
 | Redis | 单节点 | Sentinel 小规格 | Sentinel 3 × 8C32G |
@@ -249,18 +249,15 @@ sequenceDiagram
 - **配置回滚**：Nacos 历史版本一键回滚；
 - **数据库**：goose 迁移只做向前兼容的变更（先加列、后删列，跨两个版本完成），因此应用回滚不需要回滚数据库。
 
-## 1.9 Go 版的运行差异
+## 1.9 Go 服务的运行特性
 
-拓扑、环境、发布流程与 Spring Cloud 版完全一致，以下是由语言运行时带来的差异：
-
-| 项目 | Spring Cloud 版 | Go 版 | 影响 |
-| --- | --- | --- | --- |
-| 镜像 | JRE + 分层 jar，约 250MB | 静态二进制 + distroless，约 20MB | 拉取与扩容更快，攻击面更小（无 shell） |
-| 启动时间 | 10~30 秒 | 1 秒以内（不含数据库迁移） | HPA 扩容与滚动发布更快；startupProbe 可以收紧 |
-| 内存 | 每副本 1~2GiB（堆 + 元空间） | 每副本 128~512MiB | 同等节点可部署 3~5 倍副本；节点规划可相应缩小 |
-| 内存上限 | `-XX:MaxRAMPercentage=75` | `GOMEMLIMIT` = 内存上限 × 90%（Helm 自动计算） | 均避免 OOMKilled |
-| 端口 | HTTP 8080、管理 8081 | HTTP 8080、gRPC 9090、管理 8081 | 服务间调用走 gRPC 端口 |
-| 探针 | `/actuator/health/liveness`、`/readiness` | `/healthz`、`/readyz` | 停机开始后 `/readyz` 立即返回 503 |
-| 消息中间件选择 | 构建时 Maven profile 决定 Binder | 运行时 `MQ_DRIVER` 决定（二进制同时包含 Kafka / RabbitMQ 驱动） | 切换中间件无需重新构建镜像 |
-
-资源规划（1.3.3）中的 K8s 节点数可按实际压测结果下调；数据库、消息、缓存的规格与语言无关，保持不变。
+| 项目 | 做法 | 影响 |
+| --- | --- | --- |
+| 镜像 | 静态链接的单个二进制 + distroless 基础镜像，非 root，约 20MB | 拉取与扩容快；镜像中没有 shell 与包管理器，攻击面小 |
+| 启动 | 1 秒以内（不含数据库迁移） | HPA 扩容与滚动发布快；startupProbe 只需覆盖迁移时间 |
+| 内存 | 每副本 128~512MiB，request = limit | 节点规划以副本数和峰值 QPS 为准，见 1.3.3 |
+| 内存上限 | `GOMEMLIMIT` = 容器内存上限 × 90%（Helm Chart 自动计算） | GC 在接近上限时更积极，避免 OOMKilled |
+| CPU | 只设 request 不设 limit；设置 limit 时 Go 1.25+ 会自动据此调整 `GOMAXPROCS` | 避免 CFS 限流导致的延迟抖动 |
+| 端口 | HTTP 8080（对外接口）、gRPC 9090（服务间调用）、管理 8081（探针与指标） | Ingress / 网关只访问 HTTP 端口；NetworkPolicy 只放行本命名空间访问 gRPC 端口 |
+| 探针 | `/healthz`（存活）、`/readyz`（就绪，检查数据库） | 停机开始后 `/readyz` 立即返回 503，配合 preStop 摘流量 |
+| 中间件选择 | 运行时由 `DB_DRIVER`、`MQ_DRIVER` 决定（二进制同时包含 MySQL / PostgreSQL、Kafka / RabbitMQ 驱动） | 切换数据库或消息中间件无需重新构建镜像 |

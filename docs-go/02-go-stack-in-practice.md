@@ -1,7 +1,7 @@
 # 第 2 章 Go 技术栈在整套环境中的体现
 
 > 本章逐项说明 Go 技术栈中每一项技术**用在哪里、为什么这样选、在不同环境中有何差异**，并给出初始工程 `acme-go/` 中对应的代码位置。
-> 每一项都对应 [Spring Cloud 版第 2 章](../docs/02-spring-cloud-in-practice.md) 中的一项能力，两套实现遵循同一套接口约定，可以混合部署（见 2.16）。
+> 2.3 列出全部能力与代码位置，2.16 汇总各项技术在测试、预发布、生产三套环境中的差异。
 
 ## 2.1 版本基线
 
@@ -30,30 +30,35 @@
 | CloudWeGo（Kitex + Hertz） | 字节开源；Kitex 性能极高、Thrift / Protobuf 均支持，Hertz 为 HTTP 框架 | 超大流量、对性能有极致要求 |
 | 标准库 + 精选库 | 无框架绑定，最灵活 | 小团队、服务数量少 |
 
-选择 Kratos 的原因：它的抽象与 Spring Cloud 一一对应（registry ↔ DiscoveryClient、selector ↔ LoadBalancer、middleware ↔ Filter / Interceptor、config ↔ Environment），从 Java 迁移过来的团队理解成本最低；同时保持“小内核 + 可替换组件”，平台库 `pkg/` 可以按团队规范封装。
+选择 Kratos 的原因：
 
-## 2.3 Spring Cloud → Go 能力对照
+- 注册发现（registry）、负载均衡（selector）、中间件（middleware）、配置（config）、应用生命周期（App）都是独立的小接口，平台库 `pkg/` 可以按团队规范封装，个别组件也可以替换；
+- 一份 proto 同时生成 gRPC 与 HTTP 接口，契约只维护一处；
+- 官方提供 Nacos 注册扩展，自建 Nacos 与阿里云 MSE Nacos 都能直接使用；
+- `service / biz / data` 分层与 DDD 契合，服务多了以后结构依然一致。
 
-| 能力 | Spring Cloud 版 | Go 版 | Go 版代码位置 |
-| --- | --- | --- | --- |
-| 注册发现 | Spring Cloud Alibaba Nacos Discovery | Kratos registry（`contrib/registry/nacos`，nacos-sdk-go v2） | `pkg/registry` |
-| 配置中心 | Nacos Config（`spring.config.import`） | 分层配置加载 + 自研 Nacos 配置源（Watch 热更新） | `pkg/conf` |
-| 平台默认配置 | `EnvironmentPostProcessor` + `defaults/*.yml` | 内嵌 `defaults.yaml`，优先级最低 | `pkg/conf/defaults.yaml` |
-| API 网关 | Spring Cloud Gateway | Go 网关（`net/http` + `httputil.ReverseProxy`） | `app/gateway` |
-| 服务调用 | OpenFeign（HTTP `/internal/**`） | gRPC（`*InternalService`），Protobuf 契约 | `pkg/client`、`api/` |
-| 负载均衡 + 灰度 | Spring Cloud LoadBalancer + 自研 Supplier | Kratos 选择器（默认加权轮询 WRR，可换 P2C）+ 灰度 `NodeFilter` | `pkg/selector/gray` |
-| 熔断 | Spring Cloud CircuitBreaker（Resilience4j） | 服务间：Kratos 熔断中间件（Google SRE 自适应算法）；网关：gobreaker | `pkg/client`、`app/gateway` |
-| 消息驱动 | Spring Cloud Stream（Kafka / RabbitMQ Binder） | Watermill（Kafka / RabbitMQ Pub/Sub） | `pkg/mq` |
-| 事务发件箱 | `OutboxPublisher` + `OutboxRelay` | `mq.Outbox` + `mq.Relay` | `pkg/mq/outbox.go` |
-| 消费幂等 | `IdempotentConsumer` | `mq.Idempotent` | `pkg/mq/consumer.go` |
-| 认证中心 | Spring Authorization Server | go-oauth2（生产推荐 Casdoor / Keycloak / IDaaS） | `app/auth` |
-| 资源服务器 | Spring Security OAuth2 Resource Server | Kratos JWT 中间件 + JWKS | `pkg/auth` |
-| 统一响应 / 错误码 | `Result` + `GlobalExceptionHandler` | Kratos `ResponseEncoder` / `ErrorEncoder` + `errorx` | `pkg/result`、`pkg/errorx` |
-| 数据访问 | MyBatis-Plus + Flyway | GORM + goose | `pkg/database` |
-| 指标 / 链路 / 日志 | Micrometer + OTel + 结构化日志 | OpenTelemetry + Prometheus 导出 + `log/slog` | `pkg/observability` |
-| 健康检查 | Actuator 探针 | 管理端口 `/healthz`、`/readyz`、`/metrics` | `pkg/server/management.go` |
-| 分层约束 | ArchUnit | `archtest`（解析导入关系） | `pkg/archtest` |
-| 测试支撑 | `@AcmeServiceTest`（H2 + Test Binder） | `testkit`（SQLite + gochannel + 本地 JWT） | `pkg/testkit` |
+## 2.3 能力清单
+
+| 能力 | 实现 | 代码位置 |
+| --- | --- | --- |
+| 注册发现 | Kratos registry（`contrib/registry/nacos`，nacos-sdk-go v2） | `pkg/registry` |
+| 配置中心 | 分层配置加载 + Nacos 配置源（Watch 热更新） | `pkg/conf` |
+| 平台默认配置 | 内嵌 `defaults.yaml`，优先级最低，服务与环境可覆盖 | `pkg/conf/defaults.yaml` |
+| API 网关 | Go 网关（`net/http` + `httputil.ReverseProxy`） | `app/gateway` |
+| 服务调用 | gRPC（`*InternalService`），Protobuf 契约 | `pkg/client`、`api/` |
+| 负载均衡 + 灰度 | Kratos 选择器（默认加权轮询 WRR，可换 P2C）+ 灰度 `NodeFilter` | `pkg/selector/gray` |
+| 熔断 | 服务间：Kratos 熔断中间件（Google SRE 自适应算法）；网关：gobreaker | `pkg/client`、`app/gateway` |
+| 消息驱动 | Watermill（Kafka / RabbitMQ Pub/Sub） | `pkg/mq` |
+| 事务发件箱 | `mq.Outbox` + `mq.Relay` | `pkg/mq/outbox.go` |
+| 消费幂等 | `mq.Idempotent` | `pkg/mq/consumer.go` |
+| 认证中心 | go-oauth2（生产推荐 Casdoor / Keycloak / IDaaS） | `app/auth` |
+| 资源服务器 | Kratos JWT 中间件 + JWKS | `pkg/auth` |
+| 统一响应 / 错误码 | Kratos `ResponseEncoder` / `ErrorEncoder` + `errorx` | `pkg/result`、`pkg/errorx` |
+| 数据访问 | GORM + goose | `pkg/database` |
+| 指标 / 链路 / 日志 | OpenTelemetry + Prometheus 导出 + `log/slog` | `pkg/observability` |
+| 健康检查 | 管理端口 `/healthz`、`/readyz`、`/metrics` | `pkg/server/management.go` |
+| 分层约束 | `archtest`（解析导入关系） | `pkg/archtest` |
+| 测试支撑 | `testkit`（SQLite + gochannel + 本地 JWT） | `pkg/testkit` |
 
 ## 2.4 全景：一次请求经过哪些组件
 
@@ -83,7 +88,18 @@
 
 ### 2.5.2 为什么在 K8s 上仍然使用 Nacos
 
-理由与 Spring Cloud 版一致：灰度需要实例元数据、跨集群 / 混合部署需要统一注册中心、配置中心需要审批与灰度发布能力，并且阿里云 MSE 提供托管。Go 版额外的好处是：**与 Spring Cloud 服务注册到同一个 Nacos 后可以互相发现**（服务名规则不同，见 2.16）。
+K8s 自带的 Service + DNS 也能做服务发现，两种方式对比如下：
+
+| 维度 | Nacos（本方案） | K8s Service / Endpoints |
+| --- | --- | --- |
+| 调用路径 | 客户端负载均衡，gRPC 直连 Pod IP | 经 kube-proxy，或客户端读取 Endpoints |
+| 实例元数据 | 支持（`gray-tag`、`version`、`zone`），是全链路灰度的基础 | 需要读取 Pod label，依赖 RBAC 权限 |
+| 跨集群 / K8s 内外混合部署 | 支持，所有实例注册到同一个 Nacos | 只能看到本集群 |
+| 配置中心 | 同一套组件提供，支持配置灰度（Beta 发布）、历史回滚、权限审批 | ConfigMap，审批与审计需要自建 |
+| 阿里云 | MSE Nacos 托管，可叠加 MSE 服务治理 | — |
+| 额外运维 | 需要维护 Nacos 集群（云上托管则无） | 无 |
+
+中大型系统需要灰度、跨集群部署和统一的配置治理，因此选择 Nacos。
 
 不想维护 Nacos 时（如 AWS / Azure）：把 `pkg/registry` 换成 Kratos 的 kubernetes registry，或直接使用 Headless Service DNS（`dns:///order-service-grpc.acme.svc:9090`）；配置改为 ConfigMap 文件源。业务代码不受影响。
 
@@ -159,7 +175,7 @@ cfg.Watch("gateway", func(_ string, v config.Value) {
 
 ### 2.6.3 配置放在哪里
 
-与 Spring Cloud 版相同：平台默认值在 `pkg/conf`，服务固定配置在 `configs/config.yaml`，动态业务配置在 Nacos，部署形态在 GitOps values，凭据在 K8s Secret（来自 Vault / KMS），基础设施地址在 platform-env ConfigMap。**不使用环境名区分配置文件**，镜像在所有环境中一致。
+平台默认值在 `pkg/conf`，服务固定配置在 `configs/config.yaml`，动态业务配置在 Nacos，部署形态在 GitOps values，凭据在 K8s Secret（来自 Vault / KMS），基础设施地址在 platform-env ConfigMap。**不使用环境名区分配置文件**，镜像在所有环境中一致。
 
 ## 2.7 API 网关
 
@@ -167,7 +183,7 @@ cfg.Watch("gateway", func(_ string, v config.Value) {
 
 ### 2.7.1 为什么自研一个 Go 网关
 
-Go 生态没有与 Spring Cloud Gateway 同等地位的“框架内网关”，常见做法有两种：使用 APISIX / Higress / Kong 等独立网关产品，或用标准库写一个精简网关。本方案选择后者（约 400 行），因为：
+Go 生态里的网关常见有两种做法：使用 APISIX / Higress / Kong 等独立网关产品，或用标准库写一个精简网关。本方案选择后者（约 400 行），因为：
 
 - 鉴权、灰度、错误码与业务服务共用 `pkg/auth`、`pkg/selector/gray`、`pkg/result`，规则只写一份；
 - 网关逻辑和业务代码一起评审、测试、发布；
@@ -225,7 +241,7 @@ service UserInternalService {
 }
 ```
 
-`buf lint` 保证风格统一，`buf breaking` 在 CI 中与 `main` 比较，禁止删除字段、修改字段编号等破坏性变更（对应 Java 版“xxx-api 只做向后兼容修改”的约定）。
+`buf lint` 保证风格统一，`buf breaking` 在 CI 中与 `main` 比较，禁止删除字段、修改字段编号等破坏性变更，契约只能向后兼容地演进。
 
 ### 2.8.2 客户端
 
@@ -248,7 +264,7 @@ users := userv1.NewUserInternalServiceClient(conn)
 
 ### 2.8.3 错误在服务间如何传递
 
-Kratos 错误同时携带 HTTP 状态（`Code`）与业务错误码（`Reason`）。经 gRPC 传输时放在 `ErrorInfo` 中，调用方 `errors.FromError` 即可原样还原，无需像 Feign 那样解析响应体。冒烟测试验证了这条链路：user-service 返回 `404 A1001` → order-service 的防腐层翻译为 `422 A2002`；user-service 宕机 → `503 C0503`。
+Kratos 错误同时携带 HTTP 状态（`Code`）与业务错误码（`Reason`）。经 gRPC 传输时放在 `ErrorInfo` 中，调用方 `errors.FromError` 即可原样还原，无需解析响应体。冒烟测试验证了这条链路：user-service 返回 `404 A1001` → order-service 的防腐层翻译为 `422 A2002`；user-service 宕机 → `503 C0503`。
 
 ## 2.9 容错
 
@@ -273,7 +289,7 @@ Kratos 错误同时携带 HTTP 状态（`Code`）与业务错误码（`Reason`�
 | `rabbitmq` | 每个 topic 一个 fanout 交换机 | 每个消费组一个持久化队列 `<topic>_<服务名>` |
 | `gochannel` | 进程内总线，仅测试使用 | — |
 
-> 与 Java 版的差异：Spring Cloud Stream 的 RabbitMQ Binder 以事件类型作为 routing key，消费者只绑定关心的类型；Watermill 的 AMQP 适配器按 topic 生成 routing key，因此 Go 版使用 fanout，消费者按 `acme_event_type` 头过滤（与 Kafka 的处理方式相同）。
+> RabbitMQ 说明：Watermill 的 AMQP 适配器按 topic 生成 routing key，因此每个 topic 对应一个 fanout 交换机，消费方按 `acme_event_type` 头只处理关心的事件（与 Kafka 的处理方式相同）。需要在 RabbitMQ 侧按事件类型分流时，为该事件类型单独设一个 topic。
 
 ### 2.10.2 发布：事务发件箱
 
@@ -317,11 +333,17 @@ router.AddConsumerHandler("order-created", orderv1.EventsTopic, subscriber, cons
 
 ### 2.10.4 事件头与载荷
 
-事件头与 Java 版完全相同：`acme_event_id`、`acme_event_type`、`acme_event_source`、`acme_event_time`、`acme_event_key`。载荷是 protojson 编码的 proto 消息（如 `OrderCreated`），字段为小驼峰，消费方使用 `DiscardUnknown` 容忍新增字段。
+事件元数据放在消息头中：`acme_event_id`（事件 ID，消费幂等键）、`acme_event_type`（如 `order.created`）、`acme_event_source`（来源服务）、`acme_event_time`（发生时间）、`acme_event_key`（聚合根 ID，Kafka 消息 key，保证同一聚合有序）。载荷是 protojson 编码的 proto 消息（如 `OrderCreated`），字段为小驼峰，消费方使用 `DiscardUnknown` 容忍新增字段。
 
 ## 2.11 分布式事务
 
-原则与 Spring Cloud 版相同：优先从业务上避免，其次 Outbox + 幂等 + 补偿（本工程内置），长流程用 Saga。确实需要跨库强一致时，Go 生态可选 **DTM**（Go 编写，支持 Saga / TCC / XA / 二阶段消息），或 Seata 的 Go 客户端（seata-go）。引入前需评审。
+| 场景 | 方案 |
+| --- | --- |
+| 跨服务的数据最终一致（绝大多数场景） | **Outbox + 幂等消费 + 补偿**（本工程内置） |
+| 多步骤长流程（下单 → 扣库存 → 支付 → 发货） | **Saga**：每步发布事件，失败时发布补偿事件 |
+| 必须强一致且跨库的少数场景 | **DTM**（Go 编写，支持 Saga / TCC / XA / 二阶段消息）或 seata-go；引入前需评审，它会显著增加锁冲突与运维复杂度 |
+
+原则：**先从业务上避免分布式事务**（合理划分聚合与服务边界），其次最终一致，最后才是强一致。
 
 ## 2.12 认证与授权
 
@@ -332,7 +354,7 @@ router.AddConsumerHandler("order-created", orderv1.EventsTopic, subscriber, cons
 | 服务 | `pkg/auth.Server`：Kratos JWT 中间件 + JWKS（keyfunc 后台刷新）+ `iss` 校验；业务代码用 `auth.UID(ctx)`、`auth.RequireRole(ctx, "ADMIN")` |
 | 服务间 | 用户上下文中的 gRPC 调用透传 `authorization`，下游再次校验；后台任务使用客户端凭证令牌 |
 
-`app/auth` 是一个精简实现，便于本地与测试环境自包含运行。生产推荐使用成熟 IdP：**Casdoor**（Go）、**Ory Hydra**（Go）、Keycloak、阿里云 IDaaS、Amazon Cognito、Microsoft Entra ID。只要签发的 JWT 带有 `uid` / `roles` 声明并公开 JWKS，网关与服务无需改动（Java 版与 Go 版的资源服务可以共用同一个认证中心）。
+`app/auth` 是一个精简实现，便于本地与测试环境自包含运行。生产推荐使用成熟 IdP：**Casdoor**（Go）、**Ory Hydra**（Go）、Keycloak、阿里云 IDaaS、Amazon Cognito、Microsoft Entra ID。只要签发的 JWT 带有 `uid` / `roles` 声明并公开 JWKS，网关与服务无需改动。
 
 ## 2.13 可观测性
 
@@ -384,22 +406,7 @@ sequenceDiagram
 | 搜索 | go-elasticsearch，通过事件异步同步 |
 | 并发 | 每个 goroutine 都要有退出路径（`context` 取消）；批量并发用 `errgroup` 并限制并发度 |
 
-## 2.16 与 Spring Cloud 版互通
-
-两套实现遵循同一套约定，可以在同一套环境中混合部署（例如存量 Java 服务 + 新增 Go 服务）：
-
-| 约定 | 是否一致 | 说明 |
-| --- | --- | --- |
-| Nacos 命名空间 / 分组 | 一致 | 两边都注册到同一个 Nacos |
-| 服务名 | **不同** | Java 注册为 `order-service`，Go 注册为 `order-service.http` / `.grpc`。网关需要按实现类型配置路由；Java 服务调用 Go 服务时走网关或在 Go 服务额外暴露 HTTP 内部接口 |
-| 统一响应体 / 错误码 | 一致 | `{code, message, data, traceId}`，A/B/C 错误码与号段规则相同 |
-| JWT 声明 | 一致 | `uid`、`roles`、`scope`，两边可共用同一个认证中心 |
-| 灰度 | 一致 | 实例元数据 `gray-tag` + 请求头 `x-gray-tag` |
-| 事件头 / Topic | 一致 | `acme_event_*`、`acme.<领域>.events` |
-| 事件载荷 | **注意** | Go 的 protojson 把 int64 编码为字符串（Jackson 可直接读取）；金额字段 Go 版为字符串、Java 版为数值。混合部署时应在事件契约中统一金额为字符串，或用 proto 定义跨语言共享的事件契约 |
-| 内部调用协议 | **不同** | Java 用 HTTP `/internal/**`，Go 用 gRPC |
-
-## 2.17 各项技术在三套环境中的差异汇总
+## 2.16 各项技术在三套环境中的差异汇总
 
 | 技术 | 测试 test | 预发布 staging | 生产 prod |
 | --- | --- | --- | --- |

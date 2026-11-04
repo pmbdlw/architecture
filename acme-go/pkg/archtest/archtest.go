@@ -1,4 +1,4 @@
-// Package archtest 把团队分层规范变成可执行的测试（对应 Java 版 ArchUnit 规则）。
+// Package archtest 把团队分层规范变成可执行的测试：解析导入关系，违反分层规则即测试失败。
 //
 // 服务内部采用 Kratos 推荐布局：
 //

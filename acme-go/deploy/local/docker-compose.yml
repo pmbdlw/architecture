@@ -1,4 +1,4 @@
-# 本地开发中间件（与 Spring Cloud 版相同）：docker compose -f deploy/local/docker-compose.yml up -d
+# 本地开发中间件：docker compose -f deploy/local/docker-compose.yml up -d
 # 默认启动 MySQL + Nacos + Kafka + Redis + Jaeger；
 # PostgreSQL：--profile pg（服务设置 DB_DRIVER=postgres）；RabbitMQ：--profile rabbit（服务设置 MQ_DRIVER=rabbitmq）
 name: acme-go-local
