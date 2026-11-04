@@ -7,6 +7,11 @@ spring:
     # 收到 SIGTERM 后最多等待 30s 处理完存量请求（需小于 Pod terminationGracePeriodSeconds）
     timeout-per-shutdown-phase: 30s
   cloud:
+    loadbalancer:
+      cache:
+        # 实例列表本地缓存时间（默认 35s）。实例列表由 Nacos 推送到本地，缩短 TTL 几乎没有开销，
+        # 但能让实例上下线、灰度实例加入在几秒内生效
+        ttl: 2s
     nacos:
       server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
       username: ${NACOS_USERNAME:nacos}
@@ -27,6 +32,11 @@ spring:
 
 server:
   shutdown: graceful
+
+acme:
+  shutdown:
+    # 注销后继续服务的时间：覆盖 Nacos 推送 + LoadBalancer 缓存 TTL，滚动发布零失败请求
+    drain-delay: 5s
 
 management:
   server:
@@ -52,6 +62,10 @@ management:
       # 输出直方图桶，Prometheus 才能按任意分位数（P95 / P99）聚合多个实例的延迟
       percentiles-histogram:
         http.server.requests: true
+  observations:
+    enable:
+      # Spring Security 的过滤器链观测会给每个请求增加 5~6 个 Span，链路图里只保留业务相关的部分
+      spring.security: false
   tracing:
     sampling:
       # 生产按量调整（如 0.1），test / staging 可设为 1.0
@@ -60,6 +74,11 @@ management:
       remote-fields: x-gray-tag
       correlation:
         fields: x-gray-tag
+  otlp:
+    metrics:
+      export:
+        # 指标由 Prometheus 从管理端口拉取；关闭 OTLP 推送（否则每分钟向 localhost:4318 推送失败）
+        enabled: false
   opentelemetry:
     tracing:
       export:

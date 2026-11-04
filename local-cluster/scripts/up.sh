@@ -35,9 +35,12 @@ infra_up() {
   fi
 
   step "3/6 可观测（Prometheus / Grafana / Jaeger / metrics-server）"
-  k -n "$NS_OBS" create configmap grafana-dashboards --from-file="$LC_DIR/dashboards" \
-    --dry-run=client -o yaml | k apply -f - >/dev/null
-  k apply -f "$M/observability/" >/dev/null
+  local changed
+  changed=$(k -n "$NS_OBS" create configmap grafana-dashboards --from-file="$LC_DIR/dashboards/acme-overview.json" \
+    --dry-run=client -o yaml | k apply -f -; k apply -f "$M/observability/")
+  # ConfigMap 变更不会自动生效：配置或看板有改动时滚动重启
+  if grep -q "configmap/prometheus-config configured" <<<"$changed"; then k -n "$NS_OBS" rollout restart deployment/prometheus >/dev/null; fi
+  if grep -q "configmap/grafana-.* configured" <<<"$changed"; then k -n "$NS_OBS" rollout restart deployment/grafana >/dev/null; fi
 
   wait_rollout "$NS_MW" statefulset "$DB"
   wait_rollout "$NS_MW" deployment redis

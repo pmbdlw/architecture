@@ -24,6 +24,8 @@ jvm:
     -XX:TieredStopAtLevel=1
     -XX:+ExitOnOutOfMemoryError
     -Duser.timezone=Asia/Shanghai
+    -DJM.SNAPSHOT.PATH=/tmp
+    -DJM.LOG.PATH=/tmp/logs
 
 probes:
   startup:
@@ -32,7 +34,7 @@ probes:
     periodSeconds: 5
 
 preStopSleepSeconds: 3
-terminationGracePeriodSeconds: 30
+terminationGracePeriodSeconds: 45   # ≥ preStop 3s + 注销后等待 5s + 优雅停机 30s
 
 secretName: ""                   # 各服务文件中指定
 

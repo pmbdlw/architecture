@@ -1,5 +1,6 @@
 package com.acme.framework.web;
 
+import io.micrometer.observation.ObservationPredicate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -8,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
+import org.springframework.http.server.observation.ServerRequestObservationContext;
 
 import tools.jackson.databind.JacksonModule;
 import tools.jackson.databind.module.SimpleModule;
@@ -24,6 +26,21 @@ public class AcmeWebAutoConfiguration {
     @ConditionalOnMissingBean
     public GlobalExceptionHandler globalExceptionHandler() {
         return new GlobalExceptionHandler();
+    }
+
+    /**
+     * 不为管理端点（探针、Prometheus 抓取）生成链路：它们每隔几秒就有一次，会淹没真正的业务链路。
+     */
+    @Bean
+    public ObservationPredicate acmeSkipActuatorObservations() {
+        return (name, context) -> !(context instanceof ServerRequestObservationContext request
+                && request.getCarrier().getRequestURI().startsWith("/actuator"));
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ResultTraceIdAdvice resultTraceIdAdvice() {
+        return new ResultTraceIdAdvice();
     }
 
     @Bean

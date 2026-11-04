@@ -87,11 +87,13 @@ EOF2
 
 jaeger_link() { echo "      链路：$JAEGER/trace/$1" >&2; }
 
-# 打印一条链路中的所有 Span：耗时、服务、处理实例（Pod / 灰度标签）、操作名。需要 python3，否则只打印链接
+# 打印一条链路中的所有 Span：耗时、服务、处理实例（Pod / 灰度标签）、操作名。
+#   trace_summary <traceId> <至少包含的服务数>    需要 python3，否则只打印链接
 trace_summary() {
   local id=$1 i
   jaeger_link "$id"
   command -v python3 >/dev/null || return 0
+  sleep 3 # 入口 Span 最后结束、最后上报
   for ((i = 0; i < 10; i++)); do # Span 批量上报，稍等片刻
     sleep 2
     curl -s --noproxy '*' "$JAEGER/api/traces/$id" | python3 -c '
@@ -106,8 +108,8 @@ for pid, p in trace["processes"].items():
     gray = tags.get("acme.gray_tag", "")
     procs[pid] = (p["serviceName"], tags.get("k8s.pod.name", "") + ("" if gray in ("", "stable") else " gray=" + gray))
 spans = sorted(trace["spans"], key=lambda s: s["startTime"])
-if len(spans) < int(sys.argv[1]):
-    sys.exit(1)
+if len({procs[s["processID"]][0] for s in spans}) < int(sys.argv[1]):
+    sys.exit(1)  # 各服务的 Span 分批上报，等齐了再打印
 t0 = spans[0]["startTime"]
 for s in spans:
     svc, pod = procs[s["processID"]]
@@ -139,7 +141,7 @@ scenario_smoke() {
   grep -q "$(field orderNo <<<"$body")" <<<"$res" || die "30 秒内未收到下单通知（检查 MQ 与 notification-service 日志）"
   ok "notification-service 已消费 order.created 并生成通知（发件箱 → $MQ → 幂等消费）"
   log "整条链路（同步调用 + 发件箱 + MQ 是同一个 Trace）"
-  trace_summary "$trace" 7
+  trace_summary "$trace" 4
 }
 
 scenario_lb() {
@@ -184,7 +186,7 @@ scenario_gray() {
   local res
   res=$(api "$alice" POST /api/v1/orders "$(order_json gray)")
   echo "      alice 下单 HTTP $(cut -f1 <<<"$res")" >&2
-  trace_summary "$(cut -f3- <<<"$res" | field traceId)" 4
+  trace_summary "$(cut -f3- <<<"$res" | field traceId)" 3
   log "测试同学可用请求头 X-Gray-Tag: v2 指定版本（allowClientHeader=true，仅 test/local）"
   for _ in $(seq 3); do api "$bob" GET /api/v1/users/1002 "" -H 'X-Gray-Tag: v2' | cut -f2; done | sort | uniq -c | sed 's/^/      /'
 

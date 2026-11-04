@@ -43,6 +43,7 @@ resources:
     memory: 1Gi
 
 jvm:
+  # 根文件系统只读（securityContext.readOnlyRootFilesystem），Nacos 客户端的本地缓存与日志写到 /tmp（emptyDir）
   # 容器感知内存：堆占容器内存 75%，剩余给元空间/线程栈/直接内存
   options: >-
     -XX:MaxRAMPercentage=75.0
@@ -50,6 +51,8 @@ jvm:
     -XX:+ExitOnOutOfMemoryError
     -Djava.security.egd=file:/dev/./urandom
     -Duser.timezone=Asia/Shanghai
+    -DJM.SNAPSHOT.PATH=/tmp
+    -DJM.LOG.PATH=/tmp/logs
 
 # 平台级公共环境变量：集群内每个命名空间一个 ConfigMap，由平台团队维护（Nacos 地址、MQ 地址、OTel 端点等）
 platformConfigMap: acme-platform-env

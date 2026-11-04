@@ -40,14 +40,14 @@ public class GrayTagFilter implements GlobalFilter, Ordered {
     }
 
     String resolveTag(String clientTag, String uid) {
-        if (gray.allowClientHeader() && StringUtils.hasText(clientTag)) {
+        if (gray.isAllowClientHeader() && StringUtils.hasText(clientTag)) {
             return clientTag;
         }
-        if (!gray.enabled() || !StringUtils.hasText(gray.tag()) || !StringUtils.hasText(uid)) {
+        if (!gray.isEnabled() || !StringUtils.hasText(gray.getTag()) || !StringUtils.hasText(uid)) {
             return null;
         }
-        if (gray.uids().contains(uid) || Math.floorMod(uid.hashCode(), 100) < gray.percentage()) {
-            return gray.tag();
+        if (gray.getUids().contains(uid) || Math.floorMod(uid.hashCode(), 100) < gray.getPercentage()) {
+            return gray.getTag();
         }
         return null;
     }

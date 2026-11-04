@@ -15,8 +15,9 @@ spring:
           userClient:
             read-timeout: 2000
     stream:
-      # 声明输出绑定 orderEvents-out-0（由 OutboxRelay 通过 StreamBridge 发送）
-      output-bindings: orderEvents
+      # 预先声明输出绑定（由 OutboxRelay 通过 StreamBridge 发送）。名称按原样使用，必须与下面 bindings 的 key 一致，
+      # 否则会多出一个以绑定名为 topic 的绑定（关闭自动建 topic 时启动报 “Topic orderEvents not present”）
+      output-bindings: orderEvents-out-0
       bindings:
         orderEvents-out-0:
           destination: acme.order.events

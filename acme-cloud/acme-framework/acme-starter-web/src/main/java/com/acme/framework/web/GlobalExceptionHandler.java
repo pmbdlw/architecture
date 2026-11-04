@@ -4,7 +4,11 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import org.slf4j.MDC;
+import org.springframework.cloud.client.circuitbreaker.NoFallbackAvailableException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -81,6 +85,32 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Result<Void>> handleNotFound(NoResourceFoundException ex) {
         return build(CommonErrorCode.NOT_FOUND, CommonErrorCode.NOT_FOUND.message());
+    }
+
+    /**
+     * Feign 方法被 Spring Cloud CircuitBreaker（Resilience4j）包装后，下游异常会被套上一层或多层包装：
+     * 未配置 fallback 时是 NoFallbackAvailableException，经由执行器时是 ExecutionException / CompletionException，
+     * 受检异常穿过 @Transactional 等代理时再套一层 UndeclaredThrowableException。
+     * 这里沿着 cause 链拆出真正的原因，保证“下游不可用 / 熔断 → C0503”“下游业务错误 → 原错误码”的语义不变。
+     */
+    @ExceptionHandler({NoFallbackAvailableException.class, ExecutionException.class, CompletionException.class,
+            UndeclaredThrowableException.class})
+    public ResponseEntity<Result<Void>> handleWrapped(Exception ex) {
+        for (Throwable cause = ex.getCause(); cause != null && cause != cause.getCause(); cause = cause.getCause()) {
+            if (cause instanceof BizException biz) {
+                return handleBiz(biz);
+            }
+            if (cause instanceof RemoteServiceException remote) {
+                return handleRemote(remote);
+            }
+            if ("CallNotPermittedException".equals(cause.getClass().getSimpleName())) {
+                // 熔断器打开：不再调用下游，直接快速失败
+                log.warn("熔断器打开，拒绝调用: {}", cause.getMessage());
+                return build(CommonErrorCode.REMOTE_SERVICE_UNAVAILABLE,
+                        CommonErrorCode.REMOTE_SERVICE_UNAVAILABLE.message());
+            }
+        }
+        return handleUnknown(ex);
     }
 
     @ExceptionHandler(Exception.class)

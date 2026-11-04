@@ -1,1 +1,2 @@
 com.acme.framework.base.loadbalancer.AcmeLoadBalancerAutoConfiguration
+com.acme.framework.base.shutdown.AcmeShutdownAutoConfiguration

@@ -2,6 +2,7 @@ package com.acme.framework.base;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -30,26 +31,33 @@ public class AcmeDefaultsEnvironmentPostProcessor implements EnvironmentPostProc
 
     private static final String DEFAULT_PROPERTIES = "defaultProperties";
 
-    private final YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
+    private static final YamlPropertySourceLoader LOADER = new YamlPropertySourceLoader();
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         MutablePropertySources sources = environment.getPropertySources();
-        for (Resource resource : resources()) {
-            for (PropertySource<?> source : load(resource)) {
-                if (sources.contains(source.getName())) {
-                    continue;
-                }
-                if (sources.contains(DEFAULT_PROPERTIES)) {
-                    sources.addBefore(DEFAULT_PROPERTIES, source);
-                } else {
-                    sources.addLast(source);
-                }
+        for (PropertySource<?> source : loadAll()) {
+            if (sources.contains(source.getName())) {
+                continue;
+            }
+            if (sources.contains(DEFAULT_PROPERTIES)) {
+                sources.addBefore(DEFAULT_PROPERTIES, source);
+            } else {
+                sources.addLast(source);
             }
         }
     }
 
-    private List<Resource> resources() {
+    /** 按文件名顺序加载全部平台默认配置。 */
+    static List<PropertySource<?>> loadAll() {
+        List<PropertySource<?>> all = new ArrayList<>();
+        for (Resource resource : resources()) {
+            all.addAll(load(resource));
+        }
+        return all;
+    }
+
+    private static List<Resource> resources() {
         try {
             Resource[] found = new PathMatchingResourcePatternResolver().getResources(LOCATION);
             // 按文件名排序，保证不同类路径顺序下结果稳定
@@ -61,9 +69,9 @@ public class AcmeDefaultsEnvironmentPostProcessor implements EnvironmentPostProc
         }
     }
 
-    private List<PropertySource<?>> load(Resource resource) {
+    private static List<PropertySource<?>> load(Resource resource) {
         try {
-            return loader.load("acme-defaults:" + resource.getFilename(), resource);
+            return LOADER.load("acme-defaults:" + resource.getFilename(), resource);
         } catch (IOException ex) {
             throw new UncheckedIOException("解析平台默认配置失败: " + resource, ex);
         }

@@ -1,0 +1,3 @@
+# 镜像只需要各模块打好的 app.jar（见 deploy/docker/Dockerfile）；其余文件不进入构建上下文，构建更快、缓存更小
+**
+!**/target/app.jar

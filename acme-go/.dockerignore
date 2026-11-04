@@ -1,0 +1,5 @@
+# 构建上下文只需要源码与配置（BUILD_MODE=source）或 bin/<app>（BUILD_MODE=prebuilt）
+.git
+**/*_test.go
+coverage.out
+deploy/local

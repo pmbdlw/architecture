@@ -3,6 +3,7 @@ package com.acme.order;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willAnswer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,7 @@ import com.acme.framework.core.exception.RemoteErrorCode;
 import com.acme.framework.core.exception.RemoteServiceException;
 import com.acme.framework.core.result.Result;
 import com.acme.framework.mq.EventHeaders;
+import org.springframework.cloud.client.circuitbreaker.NoFallbackAvailableException;
 import com.acme.framework.mq.MessagingTracing;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
@@ -152,8 +155,23 @@ class CreateOrderFlowTest {
 
     @Test
     void userServiceOutageIsReportedAsUpstreamError() throws Exception {
-        given(userClient.getUser(anyLong())).willThrow(new RemoteServiceException("user-service", 503, "down"));
+        // 真实调用链中 Feign 方法被 CircuitBreaker 包装，未配置 fallback 时异常外面还套了一层 NoFallbackAvailableException
+        given(userClient.getUser(anyLong())).willThrow(new NoFallbackAvailableException("No fallback available.",
+                new RemoteServiceException("user-service", 503, "down")));
 
+        mvc.perform(post("/api/v1/orders")
+                        .with(jwt().jwt(token -> token.claim("uid", "1001")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"productCode":"SKU-1","quantity":1,"amount":1}
+                                """))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.code").value("C0503"));
+
+        // 经由熔断器执行器时包装为 ExecutionException
+        willAnswer(invocation -> {
+            throw new ExecutionException(new RemoteServiceException("user-service", 503, "down"));
+        }).given(userClient).getUser(anyLong());
         mvc.perform(post("/api/v1/orders")
                         .with(jwt().jwt(token -> token.claim("uid", "1001")))
                         .contentType(MediaType.APPLICATION_JSON)

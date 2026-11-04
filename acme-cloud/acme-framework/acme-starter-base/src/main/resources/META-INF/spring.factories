@@ -1,2 +1,3 @@
 org.springframework.boot.EnvironmentPostProcessor=\
+com.acme.framework.base.AcmeNacosBootstrapEnvironmentPostProcessor,\
 com.acme.framework.base.AcmeDefaultsEnvironmentPostProcessor
