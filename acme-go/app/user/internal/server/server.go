@@ -30,7 +30,7 @@ func New(d Deps) (*http.Server, *grpc.Server) {
 	uc := biz.NewUserUsecase(data.NewUserRepo(d.DB))
 	mws := pserver.Middlewares(d.Telemetry, auth.Server(d.KeyFunc, d.Conf.Auth.Issuer))
 
-	hs := pserver.NewHTTPServer(d.Conf.Server.HTTP, d.Telemetry.Logger, mws)
+	hs := pserver.NewHTTPServer(d.Conf.Server.HTTP, d.Telemetry.Logger, mws, pserver.ServedBy(d.Conf.App))
 	userv1.RegisterUserServiceHTTPServer(hs, service.NewUserService(uc))
 
 	gs := pserver.NewGRPCServer(d.Conf.Server.GRPC, mws)

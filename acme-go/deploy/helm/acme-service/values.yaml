@@ -33,6 +33,8 @@ service:
   # 灰度 Release 复用稳定版的 Service，设为 false
   enabled: true
   type: ClusterIP
+  # type 为 NodePort 时可固定端口（本地集群用），生产走 Ingress / 负载均衡
+  nodePort: null
 
 # 容器资源：内存 request = limit 防止被驱逐；CPU 不设 limit（Go 1.25+ 会按 CPU limit 自动设置 GOMAXPROCS）
 resources:

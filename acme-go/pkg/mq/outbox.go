@@ -8,6 +8,12 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"gorm.io/gorm"
@@ -28,6 +34,8 @@ type OutboxEvent struct {
 	RetryCount  int
 	CreatedAt   time.Time `gorm:"precision:3"`
 	SentAt      *time.Time
+	// 写入时的 W3C traceparent，Relay 投递时续接同一条链路
+	TraceParent *string
 }
 
 func (OutboxEvent) TableName() string { return "outbox_event" }
@@ -63,6 +71,9 @@ func (o *Outbox) Publish(ctx context.Context, topic, eventType, aggregateID stri
 		Payload:     string(body),
 		Source:      o.source,
 		CreatedAt:   time.Now().UTC().Truncate(time.Millisecond),
+	}
+	if tp := currentTraceParent(ctx); tp != "" {
+		e.TraceParent = &tp
 	}
 	return e.EventID, database.DB(ctx, o.db).Create(&e).Error
 }
@@ -139,13 +150,13 @@ func (r *Relay) relayBatch(ctx context.Context) (int, error) {
 			return err
 		}
 		for _, e := range events {
-			msg := message.NewMessage(e.EventID, []byte(e.Payload))
-			msg.Metadata.Set(HeaderID, e.EventID)
-			msg.Metadata.Set(HeaderType, e.EventType)
-			msg.Metadata.Set(HeaderSource, e.Source)
-			msg.Metadata.Set(HeaderTime, e.CreatedAt.Format(time.RFC3339Nano))
-			msg.Metadata.Set(HeaderKey, e.AggregateID)
-			if err := r.publisher.Publish(e.Topic, msg); err != nil {
+			err := r.publish(ctx, e)
+			result := "success"
+			if err != nil {
+				result = "failure"
+			}
+			metrics().published.Add(ctx, 1, attrs("topic", e.Topic, "type", e.EventType, "result", result))
+			if err != nil {
 				r.log.Warnw("msg", "投递发件箱事件失败", "event_id", e.EventID, "type", e.EventType, "error", err)
 				if err := tx.Model(&OutboxEvent{}).Where("event_id = ?", e.EventID).
 					Update("retry_count", gorm.Expr("retry_count + 1")).Error; err != nil {
@@ -163,4 +174,48 @@ func (r *Relay) relayBatch(ctx context.Context) (int, error) {
 		return nil
 	})
 	return sent, err
+}
+
+// publish 以写入时的链路为父节点创建 PRODUCER Span，并把新的 traceparent 写入消息头。
+func (r *Relay) publish(ctx context.Context, e OutboxEvent) error {
+	parent := ""
+	if e.TraceParent != nil {
+		parent = *e.TraceParent
+	}
+	ctx, span := tracer().Start(contextFromTraceParent(ctx, parent), "publish "+e.EventType,
+		trace.WithSpanKind(trace.SpanKindProducer),
+		trace.WithAttributes(
+			attribute.String("messaging.destination.name", e.Topic),
+			attribute.String("messaging.message.id", e.EventID),
+		))
+	defer span.End()
+
+	msg := message.NewMessage(e.EventID, []byte(e.Payload))
+	msg.Metadata.Set(HeaderID, e.EventID)
+	msg.Metadata.Set(HeaderType, e.EventType)
+	msg.Metadata.Set(HeaderSource, e.Source)
+	msg.Metadata.Set(HeaderTime, e.CreatedAt.Format(time.RFC3339Nano))
+	msg.Metadata.Set(HeaderKey, e.AggregateID)
+	otel.GetTextMapPropagator().Inject(ctx, propagation.MapCarrier(msg.Metadata))
+	if err := r.publisher.Publish(e.Topic, msg); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+	return nil
+}
+
+// RegisterMetrics 注册积压量指标 acme_outbox_pending：持续上涨说明 MQ 不可用或投递失败，需要告警。
+func (r *Relay) RegisterMetrics() error {
+	_, err := otel.Meter(instrumentationName).Int64ObservableGauge("acme.outbox.pending",
+		metric.WithDescription("发件箱中待投递的事件数"),
+		metric.WithInt64Callback(func(ctx context.Context, o metric.Int64Observer) error {
+			var n int64
+			if err := r.db.WithContext(ctx).Model(&OutboxEvent{}).Where("status = 0").Count(&n).Error; err != nil {
+				return err
+			}
+			o.Observe(n)
+			return nil
+		}))
+	return err
 }

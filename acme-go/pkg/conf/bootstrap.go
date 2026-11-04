@@ -32,6 +32,9 @@ type App struct {
 	// GrayTag 非空表示灰度实例，写入注册中心元数据 gray-tag。
 	GrayTag string `json:"grayTag"`
 	Zone    string `json:"zone"`
+	// ServedByHeader 为 true 时在响应头 X-Served-By 中返回处理实例（观察负载均衡 / 灰度用）。
+	// 会暴露 Pod 名，仅本地集群与测试环境开启。
+	ServedByHeader bool `json:"servedByHeader"`
 }
 
 type Server struct {

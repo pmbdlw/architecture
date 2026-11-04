@@ -13,6 +13,9 @@ public final class AcmeHeaders {
     /** 灰度标签。网关按规则打标，LoadBalancer 据此优先选择同标签实例。 */
     public static final String GRAY_TAG = "X-Gray-Tag";
 
+    /** 处理请求的服务实例（仅在开启 acme.web.served-by-header 时返回），用于观察负载均衡与灰度路由。 */
+    public static final String SERVED_BY = "X-Served-By";
+
     /** 客户端请求幂等键（写接口可选）。 */
     public static final String IDEMPOTENCY_KEY = "Idempotency-Key";
 

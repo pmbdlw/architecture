@@ -19,6 +19,7 @@ import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.Message;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -29,6 +30,9 @@ import com.acme.framework.core.exception.RemoteErrorCode;
 import com.acme.framework.core.exception.RemoteServiceException;
 import com.acme.framework.core.result.Result;
 import com.acme.framework.mq.EventHeaders;
+import com.acme.framework.mq.MessagingTracing;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import com.acme.framework.mq.OutboxRelay;
 import com.acme.framework.test.AcmeServiceTest;
 import com.acme.order.api.event.OrderEventTypes;
@@ -42,6 +46,8 @@ import tools.jackson.databind.json.JsonMapper;
  * 端到端验证：HTTP 下单 → Feign 校验买家 → 订单与发件箱同事务落库 → Relay 投递到 MQ（Test Binder）。
  */
 @AcmeServiceTest
+// 测试默认关闭链路导出（连带关闭 W3C 透传）；这里打开，验证 traceparent 经发件箱续接到消息
+@TestPropertySource(properties = "management.tracing.export.enabled=true")
 class CreateOrderFlowTest {
 
     @Autowired
@@ -55,6 +61,9 @@ class CreateOrderFlowTest {
 
     @Autowired
     private OutputDestination output;
+
+    @Autowired
+    private Tracer tracer;
 
     @MockitoBean
     private UserClient userClient;
@@ -73,15 +82,22 @@ class CreateOrderFlowTest {
     void createOrderPublishesOrderCreatedEventThroughOutbox() throws Exception {
         given(userClient.getUser(1001L)).willReturn(Result.ok(new UserDTO(1001L, "alice", "ACTIVE")));
 
-        String body = mvc.perform(post("/api/v1/orders")
-                        .with(jwt().jwt(token -> token.claim("uid", "1001")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"productCode":"SKU-1","quantity":2,"amount":99.80}
-                                """))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.status").value("CREATED"))
-                .andReturn().getResponse().getContentAsString();
+        // MockMvc 不经过 Servlet 过滤器链，这里手动开启一个 Span 模拟入口请求的链路
+        Span requestSpan = tracer.nextSpan().name("POST /api/v1/orders").start();
+        String body;
+        try (Tracer.SpanInScope ignored = tracer.withSpan(requestSpan)) {
+            body = mvc.perform(post("/api/v1/orders")
+                            .with(jwt().jwt(token -> token.claim("uid", "1001")))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"productCode":"SKU-1","quantity":2,"amount":99.80}
+                                    """))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.data.status").value("CREATED"))
+                    .andReturn().getResponse().getContentAsString();
+        } finally {
+            requestSpan.end();
+        }
         String orderId = json.readTree(body).path("data").path("id").asString();
 
         // 订单与事件在同一事务中写入
@@ -89,12 +105,20 @@ class CreateOrderFlowTest {
                 "SELECT COUNT(*) FROM outbox_event WHERE aggregate_id = ? AND status = 0", Integer.class, orderId))
                 .isEqualTo(1);
 
+        // 下单请求的链路上下文随事件写入发件箱
+        String traceParent = jdbcTemplate.queryForObject(
+                "SELECT trace_parent FROM outbox_event WHERE aggregate_id = ?", String.class, orderId);
+        assertThat(traceParent).startsWith("00-" + requestSpan.context().traceId() + "-");
+
         outboxRelay.relay();
 
         Message<byte[]> message = output.receive(1000, OrderEventTypes.DESTINATION);
         assertThat(message).isNotNull();
         assertThat(message.getHeaders().get(EventHeaders.TYPE)).isEqualTo(OrderEventTypes.ORDER_CREATED);
         assertThat(message.getHeaders().get(EventHeaders.SOURCE)).isEqualTo("order-service");
+        // 投递时续接同一条链路（traceId 相同，父节点换成 PRODUCER Span）
+        assertThat(String.valueOf(message.getHeaders().get(MessagingTracing.TRACEPARENT)))
+                .startsWith(traceParent.substring(0, 35));
         JsonNode event = json.readTree(new String(message.getPayload(), StandardCharsets.UTF_8));
         assertThat(event.path("orderId").asString()).isEqualTo(orderId);
         assertThat(event.path("userId").asLong()).isEqualTo(1001L);

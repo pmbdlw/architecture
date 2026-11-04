@@ -5,12 +5,16 @@ import (
 	"embed"
 	"errors"
 	"io/fs"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/pubsub/gochannel"
 	"github.com/go-kratos/kratos/v2/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	"github.com/acme/acme-go/pkg/conf"
@@ -37,9 +41,14 @@ func TestOutboxRelayAndIdempotentConsumer(t *testing.T) {
 	if _, err := outbox.Publish(ctx, "acme.order.events", "order.created", "1", wrapperspb.String("x")); !errors.Is(err, mq.ErrNoTransaction) {
 		t.Fatalf("publish outside tx should fail, got %v", err)
 	}
+	// 模拟入口请求的链路：traceparent 应随事件写入发件箱，并由 Relay 续接到消息头
+	otel.SetTextMapPropagator(propagation.TraceContext{})
+	otel.SetTracerProvider(sdktrace.NewTracerProvider())
+	reqCtx, reqSpan := otel.Tracer("test").Start(ctx, "POST /api/v1/orders")
+	traceID := reqSpan.SpanContext().TraceID().String()
 	tx := database.NewTransaction(db)
 	var eventID string
-	if err := tx.InTx(ctx, func(ctx context.Context) error {
+	if err := tx.InTx(reqCtx, func(ctx context.Context) error {
 		eventID, err = outbox.Publish(ctx, "acme.order.events", "order.created", "42", wrapperspb.String("hello"))
 		return err
 	}); err != nil {
@@ -64,6 +73,10 @@ func TestOutboxRelayAndIdempotentConsumer(t *testing.T) {
 	if msg.Metadata.Get(mq.HeaderID) != eventID || msg.Metadata.Get(mq.HeaderKey) != "42" ||
 		msg.Metadata.Get(mq.HeaderType) != "order.created" || msg.Metadata.Get(mq.HeaderSource) != "order-service" {
 		t.Fatalf("unexpected metadata %v", msg.Metadata)
+	}
+	reqSpan.End()
+	if tp := msg.Metadata.Get(mq.HeaderTraceParent); !strings.HasPrefix(tp, "00-"+traceID+"-") {
+		t.Fatalf("traceparent %q should continue trace %s", tp, traceID)
 	}
 	if n, _ := relay.RelayAll(ctx); n != 0 {
 		t.Fatalf("already-sent events relayed again: %d", n)

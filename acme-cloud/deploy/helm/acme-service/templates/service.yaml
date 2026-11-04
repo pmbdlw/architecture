@@ -13,6 +13,10 @@ spec:
     - name: http
       port: 80
       targetPort: http
+      {{- if and (eq .Values.service.type "NodePort") .Values.service.nodePort }}
+      # 仅本地集群使用：固定 NodePort，配合 kind extraPortMappings 从宿主机直接访问
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
     - name: management
       port: {{ .Values.ports.management }}
       targetPort: management

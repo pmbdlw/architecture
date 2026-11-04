@@ -37,7 +37,7 @@ func New(d Deps) (*http.Server, *mq.Router, error) {
 	uc := biz.NewNotificationUsecase(data.NewNotificationRepo(d.DB), data.NewLogSender(d.Telemetry.Logger))
 
 	mws := pserver.Middlewares(d.Telemetry, auth.Server(d.KeyFunc, d.Conf.Auth.Issuer))
-	hs := pserver.NewHTTPServer(d.Conf.Server.HTTP, d.Telemetry.Logger, mws)
+	hs := pserver.NewHTTPServer(d.Conf.Server.HTTP, d.Telemetry.Logger, mws, pserver.ServedBy(d.Conf.App))
 	notificationv1.RegisterNotificationServiceHTTPServer(hs, service.NewNotificationService(uc))
 
 	router, err := mq.NewRouter(d.DLQPublisher, mq.RouterConfig{

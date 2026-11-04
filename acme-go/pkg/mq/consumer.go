@@ -8,6 +8,9 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/go-kratos/kratos/v2/log"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 
 	"github.com/acme/acme-go/pkg/database"
@@ -42,17 +45,33 @@ func (i *Idempotent) Handler(fn func(ctx context.Context, msg *message.Message) 
 		if id == "" {
 			return errors.New("消息缺少 " + HeaderID + " 头，无法保证幂等")
 		}
-		err := i.tx.InTx(msg.Context(), func(ctx context.Context) error {
+		eventType := msg.Metadata.Get(HeaderType)
+		ctx, span := tracer().Start(contextFromTraceParent(msg.Context(), msg.Metadata.Get(HeaderTraceParent)),
+			"process "+eventType,
+			trace.WithSpanKind(trace.SpanKindConsumer),
+			trace.WithAttributes(
+				attribute.String("messaging.consumer.group.name", i.consumer),
+				attribute.String("messaging.message.id", id),
+			))
+		defer span.End()
+		err := i.tx.InTx(ctx, func(ctx context.Context) error {
 			record := ConsumedEvent{Consumer: i.consumer, EventID: id, ConsumedAt: time.Now().UTC()}
 			if err := database.DB(ctx, i.db).Create(&record).Error; err != nil {
 				return err
 			}
 			return fn(ctx, msg)
 		})
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
+		result := "processed"
+		switch {
+		case errors.Is(err, gorm.ErrDuplicatedKey):
 			i.log.Infow("msg", "重复消息已跳过", "consumer", i.consumer, "event_id", id)
-			return nil
+			result, err = "duplicate", nil
+		case err != nil:
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			result = "failed"
 		}
+		metrics().consumed.Add(ctx, 1, attrs("consumer", i.consumer, "type", eventType, "result", result))
 		return err
 	}
 }

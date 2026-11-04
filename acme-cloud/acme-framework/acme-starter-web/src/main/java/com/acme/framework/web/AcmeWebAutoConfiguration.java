@@ -1,5 +1,6 @@
 package com.acme.framework.web;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,6 +31,19 @@ public class AcmeWebAutoConfiguration {
         FilterRegistrationBean<TraceIdResponseFilter> registration =
                 new FilterRegistrationBean<>(new TraceIdResponseFilter());
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 100);
+        return registration;
+    }
+
+    /** 本地集群 / 测试环境观察负载均衡与灰度用；会暴露实例名，生产保持关闭。 */
+    @Bean
+    @ConditionalOnProperty(prefix = "acme.web", name = "served-by-header", havingValue = "true")
+    public FilterRegistrationBean<ServedByResponseFilter> servedByResponseFilter(
+            @Value("${spring.application.name:app}") String application,
+            @Value("${HOSTNAME:localhost}") String instance,
+            @Value("${GRAY_TAG:}") String grayTag) {
+        FilterRegistrationBean<ServedByResponseFilter> registration =
+                new FilterRegistrationBean<>(new ServedByResponseFilter(application, instance, grayTag));
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 101);
         return registration;
     }
 

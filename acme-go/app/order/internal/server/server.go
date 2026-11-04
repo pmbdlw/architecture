@@ -3,6 +3,7 @@ package server
 
 import (
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
@@ -38,8 +39,11 @@ func New(d Deps) (*http.Server, *mq.Relay) {
 		data.NewEventPublisher(mq.NewOutbox(d.DB, d.Conf.App.Name)),
 	)
 	mws := pserver.Middlewares(d.Telemetry, auth.Server(d.KeyFunc, d.Conf.Auth.Issuer))
-	hs := pserver.NewHTTPServer(d.Conf.Server.HTTP, d.Telemetry.Logger, mws)
+	hs := pserver.NewHTTPServer(d.Conf.Server.HTTP, d.Telemetry.Logger, mws, pserver.ServedBy(d.Conf.App))
 	orderv1.RegisterOrderServiceHTTPServer(hs, service.NewOrderService(uc))
 	relay := mq.NewRelay(d.DB, d.Publisher, d.Conf.MQ.Outbox, d.Telemetry.Logger)
+	if err := relay.RegisterMetrics(); err != nil {
+		log.NewHelper(d.Telemetry.Logger).Warnw("msg", "注册发件箱指标失败", "error", err)
+	}
 	return hs, relay
 }

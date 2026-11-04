@@ -38,6 +38,12 @@ spring:
               auto-bind-dlq: true
               republish-to-dlq: true
 
+acme:
+  mq:
+    outbox:
+      # 本服务只消费事件、没有 outbox_event 表，不启动发件箱投递
+      relay-enabled: false
+
 server:
   port: ${SERVER_PORT:8103}
 

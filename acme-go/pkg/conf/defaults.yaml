@@ -7,6 +7,8 @@ app:
   version: ${APP_VERSION:dev}
   grayTag: ${GRAY_TAG:}
   zone: ${APP_ZONE:}
+  # 响应头 X-Served-By 返回处理实例（观察负载均衡 / 灰度用），会暴露 Pod 名，仅本地集群与测试环境开启
+  servedByHeader: ${SERVED_BY_HEADER:false}
 
 server:
   http:
