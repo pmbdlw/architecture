@@ -184,7 +184,7 @@ func (r *Relay) relayBatch(ctx context.Context) (int, error) {
 // READ COMMITTED 只锁定读到的行，配合 SKIP LOCKED 多副本互不阻塞，也不影响业务写入。
 // PostgreSQL 默认即为 READ COMMITTED；SQLite（测试）不支持设置隔离级别，保持默认。
 func relayTxOptions(db *gorm.DB) *sql.TxOptions {
-	if db.Dialector.Name() == "sqlite" {
+	if db.Name() == "sqlite" {
 		return nil
 	}
 	return &sql.TxOptions{Isolation: sql.LevelReadCommitted}
