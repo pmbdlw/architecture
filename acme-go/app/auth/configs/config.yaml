@@ -37,3 +37,7 @@ oauth:
       username: alice
       password: ${AUTH_DEMO_PASSWORD:password}
       roles: [USER]
+    - uid: 1002
+      username: bob
+      password: ${AUTH_DEMO_PASSWORD:password}
+      roles: [USER]

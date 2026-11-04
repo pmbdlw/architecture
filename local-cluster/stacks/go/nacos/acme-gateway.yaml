@@ -1,0 +1,32 @@
+# Nacos 命名空间：local    Data ID：acme-gateway.yaml
+# 网关动态配置：修改后网关实时生效，无需重启（scripts/demo.sh gray / ratelimit 会改写这里）。
+gateway:
+  routes:
+    - id: user-service
+      prefix: /api/v1/users
+      service: user-service
+    - id: order-service
+      prefix: /api/v1/orders
+      service: order-service
+    - id: notification-service
+      prefix: /api/v1/notifications
+      service: notification-service
+  publicPrefixes: [/api/v1/public/]
+  timeout: 10s
+  rateLimit:
+    enabled: true
+    perSecond: 50
+    burst: 100
+  breaker:
+    minRequests: 20
+    failureRatio: 0.5
+    openTimeout: 10s
+    interval: 60s
+  gray:
+    enabled: false
+    tag: v2
+    uids: []
+    percentage: 0
+    allowClientHeader: true
+  cors:
+    allowedOrigins: ["http://localhost:3000"]

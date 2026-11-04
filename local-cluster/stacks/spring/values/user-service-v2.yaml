@@ -1,0 +1,12 @@
+# 灰度版本：同一镜像（或新版本镜像）以 grayTag=v2 部署为独立 Deployment，注册到 Nacos 时带元数据 gray-tag=v2。
+# 复用稳定版的 Service；流量由网关灰度规则 + 灰度 LoadBalancer 决定，而不是 K8s Service。
+appName: user-service
+grayTag: v2
+replicaCount: 1
+image:
+  repository: acme-cloud/user-service
+secretName: user-service-secrets
+service:
+  enabled: false
+podDisruptionBudget:
+  enabled: false

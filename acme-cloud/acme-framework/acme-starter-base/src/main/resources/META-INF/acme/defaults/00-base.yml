@@ -48,6 +48,10 @@ management:
     tags:
       application: ${spring.application.name}
       env: ${APP_ENV:local}
+    distribution:
+      # 输出直方图桶，Prometheus 才能按任意分位数（P95 / P99）聚合多个实例的延迟
+      percentiles-histogram:
+        http.server.requests: true
   tracing:
     sampling:
       # 生产按量调整（如 0.1），test / staging 可设为 1.0

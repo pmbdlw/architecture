@@ -1,0 +1,9 @@
+# Nacos 命名空间：local    Data ID：order-service.yaml
+# 订单服务调优参数（启动时读取，修改后需滚动重启生效）。
+client:
+  timeout: 2s
+
+mq:
+  outbox:
+    batchSize: 100
+    pollInterval: 1s

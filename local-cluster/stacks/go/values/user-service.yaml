@@ -1,0 +1,4 @@
+appName: user-service
+image:
+  repository: acme-go/user-service
+secretName: user-service-secrets

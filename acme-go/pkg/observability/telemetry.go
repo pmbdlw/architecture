@@ -28,11 +28,15 @@ type Telemetry struct {
 // Setup 初始化日志、链路（OTLP/HTTP 上报）与指标（Prometheus 格式，由管理端口 /metrics 暴露）。
 func Setup(ctx context.Context, b *conf.Bootstrap) (*Telemetry, error) {
 	t := &Telemetry{Logger: NewLogger(b.App, b.Observability.Log)}
-	res := resource.NewSchemaless(
+	// OTEL_RESOURCE_ATTRIBUTES（Helm Chart 注入 Pod 名、灰度标签等）与服务自身属性合并
+	res, err := resource.New(ctx, resource.WithFromEnv(), resource.WithAttributes(
 		attribute.String("service.name", b.App.Name),
 		attribute.String("service.version", b.App.Version),
 		attribute.String("deployment.environment", b.App.Env),
-	)
+	))
+	if err != nil {
+		return nil, err
+	}
 
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	sampler := sdktrace.ParentBased(sdktrace.TraceIDRatioBased(b.Observability.Tracing.Sampling))

@@ -1,0 +1,51 @@
+# 本地集群公共覆盖项：与 acme-cloud/deploy/helm/acme-service/values.yaml 合并（只写差异）。
+# 结构与 deploy/gitops/envs/<env>/*.yaml 相同，相当于多了一个 local 环境。
+env: local                       # APP_ENV=local、NACOS_NAMESPACE=local
+
+image:
+  pullPolicy: IfNotPresent       # 镜像由 build.sh 构建并 kind load 到节点，不访问镜像仓库
+
+replicaCount: 2
+autoscaling:
+  enabled: false
+
+# 本地资源有限：每个 JVM 约 640MiB。生产按 deploy/gitops/envs/prod 的规格（1~2GiB）
+resources:
+  requests:
+    cpu: 100m
+    memory: 640Mi
+  limits:
+    memory: 640Mi
+jvm:
+  # 本地用 SerialGC + C1 降低内存与启动开销；生产保持 Chart 默认（G1）
+  options: >-
+    -XX:MaxRAMPercentage=70.0
+    -XX:+UseSerialGC
+    -XX:TieredStopAtLevel=1
+    -XX:+ExitOnOutOfMemoryError
+    -Duser.timezone=Asia/Shanghai
+
+probes:
+  startup:
+    # 本机同时启动多个 JVM 时 CPU 紧张，最多等 5 分钟
+    failureThreshold: 60
+    periodSeconds: 5
+
+preStopSleepSeconds: 3
+terminationGracePeriodSeconds: 30
+
+secretName: ""                   # 各服务文件中指定
+
+serviceMonitor:
+  enabled: false                 # 本地 Prometheus 按 Pod 注解发现
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8081"
+  prometheus.io/path: /actuator/prometheus
+
+networkPolicy:
+  enabled: true
+  allowFromNamespaces: [observability]
+
+extraEnv:
+  TRACING_SAMPLING_PROBABILITY: "1.0"

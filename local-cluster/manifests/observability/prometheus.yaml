@@ -1,0 +1,178 @@
+# Prometheus 3：按 Pod 注解自动发现业务服务（prometheus.io/scrape|port|path），并加载告警规则。
+# 生产：Prometheus Operator + ServiceMonitor / 阿里云 ARMS Prometheus。UI：http://localhost:30090
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: observability
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: acme-prometheus
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints", "nodes", "nodes/metrics", "nodes/proxy"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: acme-prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: acme-prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: observability
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: observability
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 10s
+      evaluation_interval: 10s
+    rule_files:
+      - /etc/prometheus/rules.yml
+    scrape_configs:
+      # 业务服务：Helm Chart 的 podAnnotations 声明抓取端口与路径（管理端口 8081）
+      - job_name: acme-services
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces: { names: [acme] }
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: "true"
+          - source_labels: [__meta_kubernetes_pod_phase]
+            action: keep
+            regex: Running
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__meta_kubernetes_pod_ip, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            target_label: __address__
+            regex: (.+);(.+)
+            replacement: $1:$2
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+            target_label: service
+          - source_labels: [__meta_kubernetes_pod_label_acme_com_gray_tag]
+            target_label: gray_tag
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_version]
+            target_label: version
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: node
+      # 容器 CPU / 内存（kubelet 内置 cAdvisor，经 API Server 代理访问）：两套实现口径一致
+      - job_name: kubelet-cadvisor
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: __metrics_path__
+            regex: (.+)
+            replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+        metric_relabel_configs:
+          # 只保留业务命名空间的少量容器指标，控制本地 Prometheus 的序列数
+          - source_labels: [__name__, namespace]
+            regex: (container_cpu_usage_seconds_total|container_memory_working_set_bytes);acme
+            action: keep
+      - job_name: prometheus
+        static_configs:
+          - targets: ["localhost:9090"]
+  # 与 docs 中“告警基线”一致的几条规则；本地没有 Alertmanager，在 Prometheus UI 的 Alerts 页面观察
+  rules.yml: |
+    groups:
+      - name: acme
+        rules:
+          - alert: ServiceDown
+            expr: up{job="acme-services"} == 0
+            for: 30s
+            labels: { severity: critical }
+            annotations: { summary: "{{ $labels.pod }} 指标端口无响应" }
+          - alert: OutboxBacklog
+            expr: max by (service) (acme_outbox_pending) > 10
+            for: 30s
+            labels: { severity: warning }
+            annotations: { summary: "{{ $labels.service }} 发件箱积压 {{ $value }} 条，检查消息中间件" }
+          - alert: OutboxPublishFailing
+            expr: sum by (service) (rate(acme_outbox_published_total{result="failure"}[1m])) > 0
+            for: 30s
+            labels: { severity: warning }
+            annotations: { summary: "{{ $labels.service }} 发件箱投递持续失败" }
+          - alert: ConsumerFailing
+            expr: sum by (service) (rate(acme_mq_consumed_total{result="failed"}[1m])) > 0
+            for: 30s
+            labels: { severity: warning }
+            annotations: { summary: "{{ $labels.service }} 消费失败（重试后进入死信）" }
+          - alert: CircuitBreakerOpen
+            expr: max by (service, name) (resilience4j_circuitbreaker_state{state=~"open|forced_open"}) > 0
+            labels: { severity: warning }
+            annotations: { summary: "{{ $labels.service }} 熔断器 {{ $labels.name }} 打开" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: observability
+spec:
+  type: NodePort
+  selector: { app: prometheus }
+  ports:
+    - { name: http, port: 9090, nodePort: 30090 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: prometheus }
+  template:
+    metadata:
+      labels: { app: prometheus }
+      annotations:
+        # 配置变更后 up.sh 会滚动重启
+        acme.com/config-version: "1"
+    spec:
+      serviceAccountName: prometheus
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v3.5.0
+          args:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.retention.time=2d
+            - --web.enable-lifecycle
+          ports:
+            - { name: http, containerPort: 9090 }
+          readinessProbe:
+            httpGet: { path: /-/ready, port: http }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 50m, memory: 256Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: config, mountPath: /etc/prometheus }
+            - { name: data, mountPath: /prometheus }
+      volumes:
+        - name: config
+          configMap: { name: prometheus-config }
+        - name: data
+          emptyDir: {}

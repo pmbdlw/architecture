@@ -1,0 +1,11 @@
+appName: acme-gateway
+image:
+  repository: acme-go/acme-gateway
+secretName: acme-gateway-secrets
+# 本地用 NodePort 代替 Ingress：宿主机 localhost:30080 → 网关
+service:
+  type: NodePort
+  nodePort: 30080
+# 入口服务接收集群外流量（NodePort 的源地址是节点 IP），不启用命名空间级 NetworkPolicy；生产中只放行 Ingress 控制器
+networkPolicy:
+  enabled: false

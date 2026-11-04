@@ -1,0 +1,19 @@
+appName: acme-auth
+image:
+  repository: acme-go/acme-auth
+# 授权码 / 登录会话保存在进程内存中，本地只跑 1 个副本；生产多副本需改用共享存储（Redis / 数据库）
+replicaCount: 1
+secretName: acme-auth-secrets
+# 签名密钥以文件挂载（up.sh 首次运行时生成 Secret acme-auth-jwk）：多副本共用同一把密钥，重启后已签发的令牌依然有效
+secretMounts:
+  - name: jwk
+    secretName: acme-auth-jwk
+    mountPath: /etc/acme-auth/jwk
+extraEnv:
+  TRACING_SAMPLING_PROBABILITY: "1.0"
+  AUTH_JWK_PRIVATE_KEY_FILE: /etc/acme-auth/jwk/private.pem
+service:
+  type: NodePort
+  nodePort: 30900
+networkPolicy:
+  enabled: false

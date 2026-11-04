@@ -43,6 +43,8 @@ type Server struct {
 	Management Listen `json:"management"`
 	// StopTimeout 优雅停机等待时间，需小于 Pod terminationGracePeriodSeconds。
 	StopTimeout Duration `json:"stopTimeout"`
+	// DrainDelay 从注册中心注销后继续服务的时间：等调用方（网关、其他服务）收到实例下线推送，再停止服务器。
+	DrainDelay Duration `json:"drainDelay"`
 }
 
 type Listen struct {

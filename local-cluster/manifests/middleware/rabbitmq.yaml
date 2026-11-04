@@ -1,0 +1,55 @@
+# RabbitMQ 4.1 单节点（MQ=rabbitmq 时使用；生产：3 节点 Quorum Queue / 阿里云消息队列 RabbitMQ 版）。
+# 管理台：http://localhost:30672（acme / local-only）
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: middleware
+spec:
+  type: NodePort
+  selector: { app: rabbitmq }
+  ports:
+    - { name: amqp, port: 5672 }
+    - { name: management, port: 15672, nodePort: 30672 }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq
+  namespace: middleware
+spec:
+  serviceName: rabbitmq
+  replicas: 1
+  selector:
+    matchLabels: { app: rabbitmq }
+  template:
+    metadata:
+      labels: { app: rabbitmq }
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:4.1-management
+          env:
+            - { name: RABBITMQ_DEFAULT_USER, value: acme }
+            - { name: RABBITMQ_DEFAULT_PASS, value: local-only }
+          ports:
+            - { name: amqp, containerPort: 5672 }
+            - { name: management, containerPort: 15672 }
+          readinessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+            periodSeconds: 10
+            timeoutSeconds: 10
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/rabbitmq }
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests: { storage: 1Gi }

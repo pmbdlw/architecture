@@ -92,6 +92,9 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            # 链路中的每个 Span 都带上 Pod 名与灰度标签，便于在 Jaeger / ARMS 中定位具体实例
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "k8s.pod.name=$(POD_NAME),k8s.namespace.name={{ .Release.Namespace }},service.instance.id=$(POD_NAME),acme.gray_tag={{ .Values.grayTag | default "stable" }}"
             {{- range $key, $value := .Values.extraEnv }}
             - name: {{ $key }}
               value: {{ $value | quote }}
@@ -128,9 +131,19 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            {{- range .Values.secretMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              readOnly: true
+            {{- end }}
       volumes:
         - name: tmp
           emptyDir: {}
+        {{- range .Values.secretMounts }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

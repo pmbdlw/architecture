@@ -1,0 +1,72 @@
+# MySQL 8.4 单实例（生产：自建 MGR / 阿里云 RDS / PolarDB）。
+# 一个服务一个库、一个账号（Database per Service），账号只能访问自己的库。
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init
+  namespace: middleware
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS acme_user DEFAULT CHARACTER SET utf8mb4;
+    CREATE DATABASE IF NOT EXISTS acme_order DEFAULT CHARACTER SET utf8mb4;
+    CREATE DATABASE IF NOT EXISTS acme_notification DEFAULT CHARACTER SET utf8mb4;
+    CREATE USER IF NOT EXISTS 'user_svc'@'%' IDENTIFIED BY 'local-only';
+    CREATE USER IF NOT EXISTS 'order_svc'@'%' IDENTIFIED BY 'local-only';
+    CREATE USER IF NOT EXISTS 'notification_svc'@'%' IDENTIFIED BY 'local-only';
+    GRANT ALL PRIVILEGES ON acme_user.* TO 'user_svc'@'%';
+    GRANT ALL PRIVILEGES ON acme_order.* TO 'order_svc'@'%';
+    GRANT ALL PRIVILEGES ON acme_notification.* TO 'notification_svc'@'%';
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: middleware
+spec:
+  selector: { app: mysql }
+  ports:
+    - { name: mysql, port: 3306 }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: middleware
+spec:
+  serviceName: mysql
+  replicas: 1
+  selector:
+    matchLabels: { app: mysql }
+  template:
+    metadata:
+      labels: { app: mysql }
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.4
+          args: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
+          env:
+            - { name: MYSQL_ROOT_PASSWORD, value: root }
+            - { name: TZ, value: Asia/Shanghai }
+          ports:
+            - { name: mysql, containerPort: 3306 }
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 768Mi }
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/mysql }
+            - { name: init, mountPath: /docker-entrypoint-initdb.d }
+      volumes:
+        - name: init
+          configMap: { name: mysql-init }
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests: { storage: 2Gi }

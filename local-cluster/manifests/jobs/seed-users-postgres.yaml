@@ -1,0 +1,32 @@
+# 演示数据：与认证中心演示账号对应的用户档案（uid 相同）。
+# 表由 user-service 启动时的数据库迁移创建，这里等表出现后再写入；重复执行无副作用。
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seed-users
+  namespace: middleware
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: seed
+          image: postgres:17
+          env:
+            - { name: PGPASSWORD, value: local-only }
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              P="psql -h postgres.middleware.svc.cluster.local -U user_svc -d acme_user -v ON_ERROR_STOP=1"
+              until $P -c "SELECT 1 FROM user_account LIMIT 1" >/dev/null 2>&1; do echo "等待 user-service 完成迁移…"; sleep 5; done
+              $P <<'SQL'
+              INSERT INTO user_account (id, username, email, status, created_at, updated_at) VALUES
+                (1,    'admin', 'admin@acme.local', 'ACTIVE', NOW(), NOW()),
+                (1001, 'alice', 'alice@acme.local', 'ACTIVE', NOW(), NOW()),
+                (1002, 'bob',   'bob@acme.local',   'ACTIVE', NOW(), NOW())
+              ON CONFLICT (id) DO NOTHING;
+              SQL
+              $P -c "SELECT id, username, status FROM user_account ORDER BY id"

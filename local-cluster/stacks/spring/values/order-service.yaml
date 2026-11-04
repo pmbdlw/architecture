@@ -1,0 +1,10 @@
+appName: order-service
+image:
+  repository: acme-cloud/order-service
+secretName: order-service-secrets
+# 演示 HPA：CPU 超过 requests 的 300% 时扩容（JVM 基线 CPU 较高，阈值相应放大；压测场景 scale）
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 300

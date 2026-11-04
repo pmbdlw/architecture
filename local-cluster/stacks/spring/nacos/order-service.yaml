@@ -1,0 +1,23 @@
+# Nacos 命名空间：local    Data ID：order-service.yaml
+# 订单服务的调优参数。
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          userClient:
+            read-timeout: 2000
+
+# 熔断阈值调小，便于本地演示（breaker 场景）；生产使用平台默认值
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        minimum-number-of-calls: 10
+        sliding-window-size: 20
+
+acme:
+  mq:
+    outbox:
+      batch-size: 100
+      poll-interval: 1s

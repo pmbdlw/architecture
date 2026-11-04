@@ -21,6 +21,8 @@ server:
     # 探针与指标端口，与业务端口分离：Ingress / 网关只暴露 HTTP 端口
     addr: ${MANAGEMENT_ADDR:0.0.0.0:8081}
   stopTimeout: 30s
+  # 注销后继续服务的时间，覆盖 Nacos 推送实例变更的延迟，避免滚动发布期间调用方打到正在停止的实例
+  drainDelay: 3s
 
 nacos:
   enabled: ${NACOS_ENABLED:true}

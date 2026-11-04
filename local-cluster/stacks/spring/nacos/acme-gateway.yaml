@@ -1,0 +1,10 @@
+# Nacos 命名空间：local    Data ID：acme-gateway.yaml
+# 网关的动态配置：灰度规则、限流阈值。修改后网关自动刷新，无需重启（scripts/demo.sh gray 会改写这里）。
+acme:
+  gateway:
+    gray:
+      enabled: false
+      tag: v2
+      uids: []
+      percentage: 0
+      allow-client-header: true

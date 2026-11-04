@@ -1,0 +1,4 @@
+appName: user-service
+image:
+  repository: acme-cloud/user-service
+secretName: user-service-secrets

@@ -52,6 +52,10 @@ acme:
         username: alice
         password: "{noop}${AUTH_DEMO_PASSWORD:password}"
         roles: [USER]
+      - uid: 1002
+        username: bob
+        password: "{noop}${AUTH_DEMO_PASSWORD:password}"
+        roles: [USER]
 
 server:
   port: ${SERVER_PORT:9000}

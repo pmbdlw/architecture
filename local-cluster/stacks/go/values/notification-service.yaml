@@ -1,0 +1,4 @@
+appName: notification-service
+image:
+  repository: acme-go/notification-service
+secretName: notification-service-secrets

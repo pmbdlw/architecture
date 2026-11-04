@@ -1,0 +1,20 @@
+# 与生产集群相同的命名空间划分：业务服务、中间件、可观测各自独立。
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: acme
+  labels:
+    acme.com/part-of: acme-cloud
+    # Pod Security Admission：业务命名空间强制 restricted 级别（与生产一致）
+    pod-security.kubernetes.io/enforce: restricted
+---
+# 生产中由云产品（RDS / MSE / Kafka / Redis）或独立中间件集群提供，本地用单副本容器模拟
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: middleware
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability

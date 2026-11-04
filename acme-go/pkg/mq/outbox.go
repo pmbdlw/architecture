@@ -2,6 +2,7 @@ package mq
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"time"
 
@@ -172,8 +173,21 @@ func (r *Relay) relayBatch(ctx context.Context) (int, error) {
 			sent++
 		}
 		return nil
-	})
+	}, relayTxOptions(r.db))
 	return sent, err
+}
+
+// relayTxOptions 投递事务使用 READ COMMITTED。
+//
+// MySQL 默认的 REPEATABLE READ 下，SELECT ... FOR UPDATE 会对 (status, created_at) 索引加间隙锁，
+// 投递期间（MQ 变慢或不可用时可能持续数秒）会阻塞业务事务向 outbox_event 插入新事件，表现为下单超时。
+// READ COMMITTED 只锁定读到的行，配合 SKIP LOCKED 多副本互不阻塞，也不影响业务写入。
+// PostgreSQL 默认即为 READ COMMITTED；SQLite（测试）不支持设置隔离级别，保持默认。
+func relayTxOptions(db *gorm.DB) *sql.TxOptions {
+	if db.Dialector.Name() == "sqlite" {
+		return nil
+	}
+	return &sql.TxOptions{Isolation: sql.LevelReadCommitted}
 }
 
 // publish 以写入时的链路为父节点创建 PRODUCER Span，并把新的 traceparent 写入消息头。

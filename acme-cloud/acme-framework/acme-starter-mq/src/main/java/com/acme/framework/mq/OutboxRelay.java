@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.MimeTypeUtils;
 
@@ -40,12 +41,23 @@ public class OutboxRelay {
     public OutboxRelay(JdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate, StreamBridge streamBridge,
             OutboxProperties properties, Clock clock, MessagingTracing tracing, MeterRegistry meterRegistry) {
         this.jdbcTemplate = jdbcTemplate;
-        this.transactionTemplate = transactionTemplate;
+        this.transactionTemplate = readCommitted(transactionTemplate);
         this.streamBridge = streamBridge;
         this.properties = properties;
         this.clock = clock;
         this.tracing = tracing;
         this.meterRegistry = meterRegistry;
+    }
+
+    /**
+     * 投递事务使用 READ COMMITTED。MySQL 默认的 REPEATABLE READ 下，{@code SELECT ... FOR UPDATE} 会对
+     * (status, created_at) 索引加间隙锁，投递期间（MQ 变慢或不可用时可能持续数十秒）会阻塞业务事务插入新事件，
+     * 表现为下单超时。READ COMMITTED 只锁定读到的行，配合 SKIP LOCKED 多副本互不阻塞。PostgreSQL 默认即为 READ COMMITTED。
+     */
+    private static TransactionTemplate readCommitted(TransactionTemplate template) {
+        TransactionTemplate copy = new TransactionTemplate(template.getTransactionManager(), template);
+        copy.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        return copy;
     }
 
     /** 投递所有待发送事件，由调度器按 {@code acme.mq.outbox.poll-interval} 周期调用。 */

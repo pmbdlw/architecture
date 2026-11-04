@@ -9,6 +9,10 @@ spring:
           required-acks: all
           producer-properties:
             enable.idempotence: true
+            # Broker 不可用时尽快失败，由发件箱下一轮重试（默认 max.block.ms=60s 会让一批事件卡住数分钟）
+            max.block.ms: 5000
+            request.timeout.ms: 5000
+            delivery.timeout.ms: 10000
   rabbitmq:
     addresses: ${RABBITMQ_ADDRESSES:127.0.0.1:5672}
     username: ${RABBITMQ_USERNAME:guest}
